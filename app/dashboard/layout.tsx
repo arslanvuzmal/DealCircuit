@@ -13,9 +13,10 @@ import {
   Workflow,
   History,
   SlidersHorizontal,
-  LogOut,
-  ShieldCheck,
   Bell,
+  Activity,
+  Settings,
+  ShieldCheck,
   Sparkles,
 } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
@@ -35,13 +36,16 @@ export default async function DashboardLayout({
   const navItems = [
     { href: '/dashboard', label: 'Overview Metrics', icon: LayoutDashboard },
     { href: '/dashboard/leads', label: 'Lead Directory', icon: Users },
-    { href: '/dashboard/review-queue', label: 'Review Queue', icon: CheckSquare },
+    { href: '/dashboard/review', label: 'Review Queue', icon: CheckSquare },
     { href: '/dashboard/follow-ups', label: 'Follow-up Drafts', icon: Mail },
-    { href: '/dashboard/scoring-rules', label: 'Scoring Rules', icon: Sliders },
+    { href: '/dashboard/scoring', label: 'Scoring Rules', icon: Sliders },
     { href: '/dashboard/integrations', label: 'Integrations & CRM', icon: Radio },
-    { href: '/dashboard/workflow-runs', label: 'n8n Workflows', icon: Workflow },
-    { href: '/dashboard/audit-logs', label: 'Audit Logs', icon: History },
-    { href: '/dashboard/demo-controls', label: 'Demo Controls', icon: SlidersHorizontal },
+    { href: '/dashboard/workflows', label: 'n8n Workflows', icon: Workflow },
+    { href: '/dashboard/audit', label: 'Audit Logs', icon: History },
+    { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
+    { href: '/dashboard/health', label: 'System Health', icon: Activity },
+    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+    { href: '/dashboard/demo', label: 'Demo Controls', icon: SlidersHorizontal },
   ];
 
   return (
@@ -68,7 +72,7 @@ export default async function DashboardLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-dark-muted hover:text-dark-bright hover:bg-dark-hover transition"
+                  className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-medium text-dark-muted hover:text-dark-bright hover:bg-dark-hover transition"
                 >
                   <Icon className="w-4 h-4 text-brand-cyan" />
                   <span>{item.label}</span>
@@ -115,9 +119,12 @@ export default async function DashboardLayout({
             >
               Mailpit UI (8025)
             </a>
-            <div className="w-8 h-8 rounded-full bg-dark-hover border border-dark-border flex items-center justify-center text-dark-muted">
+            <Link
+              href="/dashboard/notifications"
+              className="w-8 h-8 rounded-full bg-dark-hover border border-dark-border flex items-center justify-center text-dark-muted hover:text-dark-bright transition"
+            >
               <Bell className="w-4 h-4" />
-            </div>
+            </Link>
           </div>
         </header>
 

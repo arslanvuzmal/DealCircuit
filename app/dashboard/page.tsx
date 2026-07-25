@@ -12,6 +12,10 @@ import {
   XCircle,
   RefreshCw,
   ArrowUpRight,
+  PieChart,
+  BarChart3,
+  Activity,
+  Layers,
 } from 'lucide-react';
 
 export const revalidate = 0;
@@ -24,6 +28,24 @@ export default async function OverviewDashboard() {
   const reviewRequired = await prisma.lead.count({ where: { category: 'REVIEW_REQUIRED' } });
   const crmSynced = await prisma.lead.count({ where: { crmSyncStatus: 'SYNCED' } });
   const crmFailed = await prisma.lead.count({ where: { crmSyncStatus: 'FAILED' } });
+  const crmPending = await prisma.lead.count({ where: { crmSyncStatus: 'PENDING' } });
+
+  const statusApproved = await prisma.lead.count({ where: { status: 'APPROVED' } });
+  const statusScored = await prisma.lead.count({ where: { status: 'SCORED' } });
+  const statusInReview = await prisma.lead.count({ where: { status: 'IN_REVIEW' } });
+  const statusRejected = await prisma.lead.count({ where: { status: 'REJECTED' } });
+
+  // Lead Source Groupings
+  const sourcesGroup = await prisma.lead.groupBy({
+    by: ['leadSource'],
+    _count: { id: true },
+  });
+
+  // Services Groupings
+  const servicesGroup = await prisma.lead.groupBy({
+    by: ['serviceRequired'],
+    _count: { id: true },
+  });
 
   const scoreAggregate = await prisma.lead.aggregate({
     _avg: { totalScore: true },
@@ -113,45 +135,113 @@ export default async function OverviewDashboard() {
         </div>
       </div>
 
-      {/* Secondary Status Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-dark-card border border-dark-border rounded-xl p-4 flex items-center justify-between">
-          <div>
-            <div className="text-xs text-dark-muted">Warm Leads</div>
-            <div className="text-lg font-bold text-brand-amber">{warmLeads}</div>
+      {/* Visual Analytics Charts Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Chart 1: Leads by Category */}
+        <div className="bg-dark-card border border-dark-border rounded-xl p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-dark-border pb-3">
+            <h2 className="text-xs font-bold text-dark-bright flex items-center gap-1.5">
+              <PieChart className="w-4 h-4 text-brand-cyan" /> Leads by Category
+            </h2>
+            <span className="text-[10px] text-dark-muted font-mono">{totalLeads} Total</span>
           </div>
-          <Zap className="w-5 h-5 text-brand-amber/60" />
-        </div>
 
-        <div className="bg-dark-card border border-dark-border rounded-xl p-4 flex items-center justify-between">
-          <div>
-            <div className="text-xs text-dark-muted">Cold Leads</div>
-            <div className="text-lg font-bold text-dark-muted">{coldLeads}</div>
-          </div>
-          <Snowflake className="w-5 h-5 text-dark-muted/60" />
-        </div>
+          <div className="space-y-2.5 text-xs">
+            <div>
+              <div className="flex justify-between font-medium mb-1">
+                <span className="text-brand-emerald">HOT (80-100)</span>
+                <span className="font-mono text-dark-bright">{hotLeads} ({totalLeads > 0 ? Math.round((hotLeads/totalLeads)*100) : 0}%)</span>
+              </div>
+              <div className="h-2 w-full bg-dark-bg rounded-full overflow-hidden border border-dark-border">
+                <div className="h-full bg-brand-emerald rounded-full" style={{ width: `${totalLeads > 0 ? (hotLeads/totalLeads)*100 : 0}%` }} />
+              </div>
+            </div>
 
-        <div className="bg-dark-card border border-dark-border rounded-xl p-4 flex items-center justify-between">
-          <div>
-            <div className="text-xs text-dark-muted">Review Required</div>
-            <div className="text-lg font-bold text-brand-coral">{reviewRequired}</div>
-          </div>
-          <AlertTriangle className="w-5 h-5 text-brand-coral/60" />
-        </div>
+            <div>
+              <div className="flex justify-between font-medium mb-1">
+                <span className="text-brand-amber">WARM (60-79)</span>
+                <span className="font-mono text-dark-bright">{warmLeads} ({totalLeads > 0 ? Math.round((warmLeads/totalLeads)*100) : 0}%)</span>
+              </div>
+              <div className="h-2 w-full bg-dark-bg rounded-full overflow-hidden border border-dark-border">
+                <div className="h-full bg-brand-amber rounded-full" style={{ width: `${totalLeads > 0 ? (warmLeads/totalLeads)*100 : 0}%` }} />
+              </div>
+            </div>
 
-        <div className="bg-dark-card border border-dark-border rounded-xl p-4 flex items-center justify-between">
-          <div>
-            <div className="text-xs text-dark-muted">CRM Sync State</div>
-            <div className="text-xs font-semibold text-dark-bright flex items-center gap-1.5 mt-0.5">
-              <span className="text-brand-emerald font-bold">{crmSynced} Synced</span>
-              {crmFailed > 0 && <span className="text-brand-coral font-bold">&bull; {crmFailed} Failed</span>}
+            <div>
+              <div className="flex justify-between font-medium mb-1">
+                <span className="text-dark-muted">COLD (0-59)</span>
+                <span className="font-mono text-dark-bright">{coldLeads} ({totalLeads > 0 ? Math.round((coldLeads/totalLeads)*100) : 0}%)</span>
+              </div>
+              <div className="h-2 w-full bg-dark-bg rounded-full overflow-hidden border border-dark-border">
+                <div className="h-full bg-dark-muted rounded-full" style={{ width: `${totalLeads > 0 ? (coldLeads/totalLeads)*100 : 0}%` }} />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between font-medium mb-1">
+                <span className="text-brand-coral">REVIEW_REQUIRED</span>
+                <span className="font-mono text-dark-bright">{reviewRequired} ({totalLeads > 0 ? Math.round((reviewRequired/totalLeads)*100) : 0}%)</span>
+              </div>
+              <div className="h-2 w-full bg-dark-bg rounded-full overflow-hidden border border-dark-border">
+                <div className="h-full bg-brand-coral rounded-full" style={{ width: `${totalLeads > 0 ? (reviewRequired/totalLeads)*100 : 0}%` }} />
+              </div>
             </div>
           </div>
-          {crmFailed > 0 ? (
-            <XCircle className="w-5 h-5 text-brand-coral" />
-          ) : (
-            <CheckCircle2 className="w-5 h-5 text-brand-emerald" />
-          )}
+        </div>
+
+        {/* Chart 2: Leads by Source */}
+        <div className="bg-dark-card border border-dark-border rounded-xl p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-dark-border pb-3">
+            <h2 className="text-xs font-bold text-dark-bright flex items-center gap-1.5">
+              <BarChart3 className="w-4 h-4 text-brand-purple" /> Leads by Source
+            </h2>
+            <span className="text-[10px] text-dark-muted font-mono">{sourcesGroup.length} Channels</span>
+          </div>
+
+          <div className="space-y-2.5 text-xs">
+            {sourcesGroup.map((src) => (
+              <div key={src.leadSource}>
+                <div className="flex justify-between font-medium mb-1">
+                  <span className="text-dark-bright">{src.leadSource}</span>
+                  <span className="font-mono text-brand-purple font-bold">{src._count.id}</span>
+                </div>
+                <div className="h-2 w-full bg-dark-bg rounded-full overflow-hidden border border-dark-border">
+                  <div className="h-full bg-brand-purple rounded-full" style={{ width: `${totalLeads > 0 ? (src._count.id/totalLeads)*100 : 0}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Chart 3: Integration Outcomes & States */}
+        <div className="bg-dark-card border border-dark-border rounded-xl p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-dark-border pb-3">
+            <h2 className="text-xs font-bold text-dark-bright flex items-center gap-1.5">
+              <Activity className="w-4 h-4 text-brand-emerald" /> CRM Sync & Processing States
+            </h2>
+            <span className="text-[10px] text-dark-muted font-mono">Real-time</span>
+          </div>
+
+          <div className="space-y-3 text-xs">
+            <div className="bg-dark-bg/60 p-3 rounded-lg border border-dark-border space-y-1.5">
+              <span className="font-semibold text-dark-bright block">CRM Integration Outcomes</span>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-brand-emerald font-bold flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Synced: {crmSynced}</span>
+                <span className="text-brand-coral font-bold flex items-center gap-1"><XCircle className="w-3 h-3" /> Failed: {crmFailed}</span>
+                <span className="text-dark-muted font-bold">Pending: {crmPending}</span>
+              </div>
+            </div>
+
+            <div className="bg-dark-bg/60 p-3 rounded-lg border border-dark-border space-y-1.5">
+              <span className="font-semibold text-dark-bright block">Processing States</span>
+              <div className="grid grid-cols-2 gap-1 text-[11px]">
+                <div>Approved: <span className="font-bold text-brand-emerald">{statusApproved}</span></div>
+                <div>Scored: <span className="font-bold text-brand-cyan">{statusScored}</span></div>
+                <div>In Review: <span className="font-bold text-brand-amber">{statusInReview}</span></div>
+                <div>Rejected: <span className="font-bold text-brand-coral">{statusRejected}</span></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
