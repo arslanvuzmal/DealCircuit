@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
-
-const execPromise = promisify(exec);
+import { prisma } from '@/lib/db';
+import { seedDemoData } from '@/lib/seedDemoData';
 
 export async function POST() {
   try {
@@ -15,11 +13,12 @@ export async function POST() {
     }
 
     console.log('[Demo Controls] Resetting database and seeding test scenarios...');
-    await execPromise('npx tsx scripts/seed.ts');
+    const result = await seedDemoData(prisma);
 
     return NextResponse.json({
       success: true,
       message: 'Demo database reset and re-seeded successfully.',
+      ...result,
     });
   } catch (error: any) {
     console.error('Reset error:', error);
