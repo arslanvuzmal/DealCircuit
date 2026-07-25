@@ -15,8 +15,7 @@
     },
     {
       "parameters": {
-        "functionCode": "// Validate Internal Secret & Normalize Event Payload\nconst headers = $input.item.json.headers || {};\nconst body = $input.item.json.body || {};\nconst secret = headers['x-internal-secret'] || '';\n\nif (secret !== '{{ $env.INTERNAL_API_SECRET }}') {\n  // Log warning & normalize\n}\n\nreturn {\n  json: {\n    event: 'LEAD_SUBMISSION',\n    leadData: body,\n    timestamp: new Date().toISOString(),
-    idempotencyKey: headers['x-idempotency-key'] || body.idempotencyKey || null\n  }\n};"
+        "functionCode": "// Normalize the inbound webhook payload.\n// Actual X-Internal-Secret authentication happens server-side on each\n// /api/internal/* call below (see the HTTP Request nodes' header\n// parameters) - a Function node's code body cannot evaluate {{ }}\n// expressions, so no secret comparison is attempted here.\nconst headers = $input.item.json.headers || {};\nconst body = $input.item.json.body || {};\n\nreturn {\n  json: {\n    event: 'LEAD_SUBMISSION',\n    leadData: body,\n    timestamp: new Date().toISOString(),\n    idempotencyKey: headers['x-idempotency-key'] || body.idempotencyKey || null\n  }\n};"
       },
       "name": "Validate & Normalize Event",
       "type": "n8n-nodes-base.function",
