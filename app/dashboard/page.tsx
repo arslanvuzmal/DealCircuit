@@ -22,38 +22,46 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function OverviewDashboard() {
-  const totalLeads = await prisma.lead.count();
-  const hotLeads = await prisma.lead.count({ where: { category: 'HOT' } });
-  const warmLeads = await prisma.lead.count({ where: { category: 'WARM' } });
-  const coldLeads = await prisma.lead.count({ where: { category: 'COLD' } });
-  const reviewRequired = await prisma.lead.count({ where: { category: 'REVIEW_REQUIRED' } });
-  const crmSynced = await prisma.lead.count({ where: { crmSyncStatus: 'SYNCED' } });
-  const crmFailed = await prisma.lead.count({ where: { crmSyncStatus: 'FAILED' } });
-  const crmPending = await prisma.lead.count({ where: { crmSyncStatus: 'PENDING' } });
+  // Fired concurrently rather than sequentially - each is an independent
+  // read, and awaiting them one at a time paid a full round-trip's latency
+  // 16 times over on every dashboard load.
+  const [
+    totalLeads,
+    hotLeads,
+    warmLeads,
+    coldLeads,
+    reviewRequired,
+    crmSynced,
+    crmFailed,
+    crmPending,
+    statusApproved,
+    statusScored,
+    statusInReview,
+    statusRejected,
+    sourcesGroup,
+    scoreAggregate,
+    recentLeads,
+  ] = await Promise.all([
+    prisma.lead.count(),
+    prisma.lead.count({ where: { category: 'HOT' } }),
+    prisma.lead.count({ where: { category: 'WARM' } }),
+    prisma.lead.count({ where: { category: 'COLD' } }),
+    prisma.lead.count({ where: { category: 'REVIEW_REQUIRED' } }),
+    prisma.lead.count({ where: { crmSyncStatus: 'SYNCED' } }),
+    prisma.lead.count({ where: { crmSyncStatus: 'FAILED' } }),
+    prisma.lead.count({ where: { crmSyncStatus: 'PENDING' } }),
+    prisma.lead.count({ where: { status: 'APPROVED' } }),
+    prisma.lead.count({ where: { status: 'SCORED' } }),
+    prisma.lead.count({ where: { status: 'IN_REVIEW' } }),
+    prisma.lead.count({ where: { status: 'REJECTED' } }),
+    prisma.lead.groupBy({ by: ['leadSource'], _count: { id: true } }),
+    prisma.lead.aggregate({ _avg: { totalScore: true } }),
+    prisma.lead.findMany({ take: 6, orderBy: { createdAt: 'desc' } }),
+  ]);
 
-  const statusApproved = await prisma.lead.count({ where: { status: 'APPROVED' } });
-  const statusScored = await prisma.lead.count({ where: { status: 'SCORED' } });
-  const statusInReview = await prisma.lead.count({ where: { status: 'IN_REVIEW' } });
-  const statusRejected = await prisma.lead.count({ where: { status: 'REJECTED' } });
-
-  // Lead Source Groupings
-  const sourcesGroup = await prisma.lead.groupBy({
-    by: ['leadSource'],
-    _count: { id: true },
-  });
-
-  const scoreAggregate = await prisma.lead.aggregate({
-    _avg: { totalScore: true },
-  });
   const avgScore = scoreAggregate._avg.totalScore ? Math.round(scoreAggregate._avg.totalScore) : 0;
-
   const qualifiedCount = hotLeads + warmLeads;
   const qualificationRate = totalLeads > 0 ? Math.round((qualifiedCount / totalLeads) * 100) : 0;
-
-  const recentLeads = await prisma.lead.findMany({
-    take: 6,
-    orderBy: { createdAt: 'desc' },
-  });
 
   return (
     <div className="space-y-6">

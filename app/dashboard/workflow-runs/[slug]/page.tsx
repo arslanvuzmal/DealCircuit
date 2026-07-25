@@ -1,8 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, ArrowDown, GitBranch, ExternalLink, Layers, CheckCircle2 } from 'lucide-react';
-import { getWorkflowShowcase, StepColor, PipelineStep } from '@/lib/workflowShowcase';
+import { ArrowLeft, ArrowDown, GitBranch, ExternalLink, Layers, CheckCircle2, ArrowRightCircle } from 'lucide-react';
+import { getWorkflowShowcase, workflowShowcases, StepColor, PipelineStep } from '@/lib/workflowShowcase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -21,13 +21,31 @@ const colorClasses: Record<StepColor, { border: string; text: string; bg: string
 
 function StepCard({ step, compact }: { step: PipelineStep; compact?: boolean }) {
   const c = colorClasses[step.color];
-  return (
-    <div className={`border ${c.border} ${c.bg} rounded-xl ${compact ? 'p-3' : 'p-4'} space-y-1`}>
+  const content = (
+    <>
       <div className={`flex items-center gap-2 font-bold ${c.text} ${compact ? 'text-xs' : 'text-sm'}`}>
         <span className={`w-1.5 h-1.5 rounded-full ${c.dot} flex-shrink-0`} />
         {step.title}
+        {step.linkSlug && <ArrowRightCircle className="w-3 h-3 flex-shrink-0 opacity-70" />}
       </div>
       <p className="text-dark-muted text-[11px] leading-relaxed">{step.description}</p>
+    </>
+  );
+
+  if (step.linkSlug) {
+    return (
+      <Link
+        href={`/dashboard/workflow-runs/${step.linkSlug}`}
+        className={`block border ${c.border} ${c.bg} hover:brightness-125 rounded-xl ${compact ? 'p-3' : 'p-4'} space-y-1 transition`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={`border ${c.border} ${c.bg} rounded-xl ${compact ? 'p-3' : 'p-4'} space-y-1`}>
+      {content}
     </div>
   );
 }
@@ -143,6 +161,27 @@ export default function WorkflowShowcasePage({ params }: { params: { slug: strin
         >
           <ExternalLink className="w-3.5 h-3.5 text-brand-cyan" /> View Raw Workflow JSON on GitHub
         </a>
+      </div>
+
+      <div className="bg-dark-card border border-dark-border rounded-xl p-6 space-y-3">
+        <h2 className="text-sm font-bold text-dark-bright border-b border-dark-border pb-3">Other Automations in This System</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {workflowShowcases
+            .filter((w) => w.slug !== workflow.slug)
+            .map((w) => (
+              <Link
+                key={w.slug}
+                href={`/dashboard/workflow-runs/${w.slug}`}
+                className="group flex items-center justify-between gap-2 bg-dark-bg/60 border border-dark-border hover:border-brand-cyan rounded-lg p-3 transition"
+              >
+                <div>
+                  <div className="text-xs font-bold text-dark-bright">{w.name}</div>
+                  <div className="text-[10px] text-dark-muted font-mono mt-0.5">{w.nodeCount} nodes</div>
+                </div>
+                <ArrowLeft className="w-3.5 h-3.5 text-dark-muted group-hover:text-brand-cyan transition rotate-180 flex-shrink-0" />
+              </Link>
+            ))}
+        </div>
       </div>
     </div>
   );

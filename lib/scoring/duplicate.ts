@@ -1,8 +1,11 @@
 import { prisma } from '../db';
 
+export type DuplicateMatchType = 'idempotency' | 'email' | 'phone' | 'company_name';
+
 export interface DuplicateCheckResult {
   isDuplicate: boolean;
   duplicateOfId?: string;
+  matchType?: DuplicateMatchType;
   reason?: string;
 }
 
@@ -22,6 +25,7 @@ export async function detectDuplicateLead(
       return {
         isDuplicate: true,
         duplicateOfId: existingByIdempotency.id,
+        matchType: 'idempotency',
         reason: `Matched exact idempotency key: ${idempotencyKey}`,
       };
     }
@@ -36,6 +40,7 @@ export async function detectDuplicateLead(
     return {
       isDuplicate: true,
       duplicateOfId: existingByEmail.id,
+      matchType: 'email',
       reason: `Matched exact email address: ${normalizedEmail}`,
     };
   }
@@ -50,6 +55,7 @@ export async function detectDuplicateLead(
       return {
         isDuplicate: true,
         duplicateOfId: existingByPhone.id,
+        matchType: 'phone',
         reason: `Matched phone number: ${normalizedPhone}`,
       };
     }
@@ -68,6 +74,7 @@ export async function detectDuplicateLead(
       return {
         isDuplicate: true,
         duplicateOfId: existingByCompanyAndName.id,
+        matchType: 'company_name',
         reason: `Matched company "${companyName}" and contact name "${fullName}"`,
       };
     }

@@ -1,8 +1,39 @@
 import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { Workflow, CheckCircle2, XCircle, GitBranch, ArrowUpRight, Zap } from 'lucide-react';
+import { Workflow, CheckCircle2, XCircle, GitBranch, ArrowUpRight, Zap, ArrowRight, Globe, Server, Share2 } from 'lucide-react';
 import { workflowShowcases } from '@/lib/workflowShowcase';
+
+const architectureStages = [
+  {
+    icon: Globe,
+    color: 'text-brand-cyan',
+    border: 'border-brand-cyan/30',
+    title: 'Public Intake',
+    items: ['Lead capture form', 'n8n webhook triggers'],
+  },
+  {
+    icon: Server,
+    color: 'text-brand-purple',
+    border: 'border-brand-purple/30',
+    title: 'LeadPilot Core',
+    items: ['Validation & scoring engine', 'PostgreSQL persistence', 'Admin dashboard'],
+  },
+  {
+    icon: Workflow,
+    color: 'text-brand-amber',
+    border: 'border-brand-amber/30',
+    title: 'n8n Automation Layer',
+    items: ['4 core workflows', '3 complex showcase templates'],
+  },
+  {
+    icon: Share2,
+    color: 'text-brand-emerald',
+    border: 'border-brand-emerald/30',
+    title: 'External Systems',
+    items: ['CRM sync', 'Email dispatch', 'Slack / notifications'],
+  },
+];
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -23,6 +54,40 @@ export default async function WorkflowRunsPage() {
           <p className="text-xs text-dark-muted mt-1">
             Execution history for lead-intake, daily-digest, failed-retry, and review-completion workflows.
           </p>
+        </div>
+      </div>
+
+      <div className="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4">
+        <h2 className="text-sm font-bold text-dark-bright border-b border-dark-border pb-3">System Architecture</h2>
+        <p className="text-xs text-dark-muted -mt-2">
+          How a lead actually moves through the platform, end to end — from public form submission to
+          synced CRM record.
+        </p>
+        <div className="flex flex-col lg:flex-row items-stretch gap-3">
+          {architectureStages.map((stage, i) => {
+            const Icon = stage.icon;
+            return (
+              <React.Fragment key={stage.title}>
+                <div className={`flex-1 border ${stage.border} bg-dark-bg/60 rounded-xl p-4 space-y-2`}>
+                  <div className={`flex items-center gap-2 font-bold text-sm ${stage.color}`}>
+                    <Icon className="w-4 h-4" /> {stage.title}
+                  </div>
+                  <ul className="space-y-1">
+                    {stage.items.map((item) => (
+                      <li key={item} className="text-[11px] text-dark-muted leading-relaxed">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {i < architectureStages.length - 1 && (
+                  <div className="flex items-center justify-center lg:px-0 py-1 lg:py-0">
+                    <ArrowRight className="w-4 h-4 text-dark-border rotate-90 lg:rotate-0 flex-shrink-0" />
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
 

@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       serviceRequired: leadData.serviceRequired,
     });
 
-    // 5. Duplicate check
+    // 5. Duplicate check (includes idempotency-key match)
     const dupResult = await detectDuplicateLead(
       leadData.normalizedEmail,
       leadData.normalizedPhone,
@@ -53,32 +53,25 @@ export async function POST(request: Request) {
       idempotencyKey
     );
 
-    // 6. Save Lead to DB
-    const lead = await prisma.lead.create({
-      data: {
-        fullName: leadData.fullName,
-        workEmail: leadData.workEmail,
-        normalizedEmail: leadData.normalizedEmail,
-        phoneNumber: leadData.phoneNumber,
-        normalizedPhone: leadData.normalizedPhone,
-        companyName: leadData.companyName,
-        companyWebsite: leadData.companyWebsite,
-        industry: leadData.industry,
-        companySize: leadData.companySize,
-        serviceRequired: leadData.serviceRequired,
-        budgetRange: leadData.budgetRange,
-        desiredTimeline: leadData.desiredTimeline,
-        decisionAuthority: leadData.decisionAuthority,
-        projectDescription: leadData.projectDescription,
-        leadSource: leadData.leadSource || 'Website Form',
-        idempotencyKey: idempotencyKey,
-        isDuplicate: dupResult.isDuplicate,
-        duplicateOfId: dupResult.duplicateOfId,
-        status: 'NEW',
-      },
-    });
+    // 5a. Idempotent replay: same key already processed - return the original
+    // result instead of attempting a second create (which would violate the
+    // unique constraint on idempotencyKey and throw).
+    if (dupResult.matchType === 'idempotency' && dupResult.duplicateOfId) {
+      const existingLead = await prisma.lead.findUnique({ where: { id: dupResult.duplicateOfId } });
+      if (existingLead) {
+        return NextResponse.json({
+          success: true,
+          leadId: existingLead.id,
+          category: existingLead.category,
+          score: existingLead.totalScore,
+          message: 'Lead already processed (idempotent replay).',
+        }, { status: 200 });
+      }
+    }
 
-    // 7. Qualify Lead
+    // 6. Qualify Lead - pure computation against the submitted data, no DB
+    // writes yet, so nothing is persisted until the final category/score
+    // are already known.
     const aiProvider = getAIProvider();
     const qualification = await aiProvider.qualifyLead({
       fullName: leadData.fullName,
@@ -103,39 +96,6 @@ export async function POST(request: Request) {
       finalCategory = 'REVIEW_REQUIRED';
     }
 
-    // 8. Save LeadScore
-    await prisma.leadScore.create({
-      data: {
-        leadId: lead.id,
-        budgetFitScore: qualification.result.scoreBreakdown.budgetFit.score,
-        serviceFitScore: qualification.result.scoreBreakdown.serviceFit.score,
-        urgencyScore: qualification.result.scoreBreakdown.urgency.score,
-        authorityScore: qualification.result.scoreBreakdown.decisionAuthority.score,
-        infoQualityScore: qualification.result.scoreBreakdown.informationQuality.score,
-        totalScore: finalScore,
-        category: finalCategory,
-        confidence: qualification.result.confidence,
-        summary: injectionResult.isInjectionDetected
-          ? `[FLAGGED - Prompt Injection Attack Detected] ${qualification.result.summary}`
-          : dupResult.isDuplicate
-          ? `[FLAGGED - Duplicate Submission (${dupResult.reason})] ${qualification.result.summary}`
-          : qualification.result.summary,
-        scoreBreakdownJson: JSON.stringify(qualification.result.scoreBreakdown),
-        risksJson: JSON.stringify([
-          ...qualification.result.risks,
-          ...(injectionResult.isInjectionDetected ? ['Suspicious system prompt instructions detected in text'] : []),
-          ...(dupResult.isDuplicate ? [`Duplicate match: ${dupResult.reason}`] : []),
-        ]),
-        missingInfoJson: JSON.stringify(qualification.result.missingInformation),
-        recommendedAction: qualification.result.recommendedAction,
-        aiProvider: qualification.provider,
-        aiModel: qualification.model,
-        promptVersion: qualification.promptVersion,
-        isDemoMode: qualification.isDemoMode,
-      },
-    });
-
-    // 9. Generate FollowUp Draft
     const followUpDraft = generateFollowUpDraft(
       leadData.fullName,
       leadData.companyName,
@@ -144,29 +104,84 @@ export async function POST(request: Request) {
       qualification.result.missingInformation
     );
 
-    const followUpRecord = await prisma.followUp.create({
-      data: {
-        leadId: lead.id,
-        subject: followUpDraft.subject,
-        body: followUpDraft.body,
-        category: finalCategory,
-        status: finalCategory === 'REVIEW_REQUIRED' ? 'DRAFT' : 'SENT',
-        recipientEmail: leadData.workEmail,
-        sentAt: finalCategory === 'REVIEW_REQUIRED' ? null : new Date(),
-      },
+    // 7. Persist Lead + LeadScore + FollowUp atomically. The Lead is created
+    // with its final status/category/score directly, so there's no
+    // create-then-update round trip and no window where a Lead row exists
+    // without its score if something downstream fails.
+    const { lead, followUpRecord } = await prisma.$transaction(async (tx) => {
+      const lead = await tx.lead.create({
+        data: {
+          fullName: leadData.fullName,
+          workEmail: leadData.workEmail,
+          normalizedEmail: leadData.normalizedEmail,
+          phoneNumber: leadData.phoneNumber,
+          normalizedPhone: leadData.normalizedPhone,
+          companyName: leadData.companyName,
+          companyWebsite: leadData.companyWebsite,
+          industry: leadData.industry,
+          companySize: leadData.companySize,
+          serviceRequired: leadData.serviceRequired,
+          budgetRange: leadData.budgetRange,
+          desiredTimeline: leadData.desiredTimeline,
+          decisionAuthority: leadData.decisionAuthority,
+          projectDescription: leadData.projectDescription,
+          leadSource: leadData.leadSource || 'Website Form',
+          idempotencyKey: idempotencyKey,
+          isDuplicate: dupResult.isDuplicate,
+          duplicateOfId: dupResult.duplicateOfId,
+          status: finalCategory === 'REVIEW_REQUIRED' ? 'IN_REVIEW' : 'SCORED',
+          category: finalCategory,
+          totalScore: finalScore,
+        },
+      });
+
+      await tx.leadScore.create({
+        data: {
+          leadId: lead.id,
+          budgetFitScore: qualification.result.scoreBreakdown.budgetFit.score,
+          serviceFitScore: qualification.result.scoreBreakdown.serviceFit.score,
+          urgencyScore: qualification.result.scoreBreakdown.urgency.score,
+          authorityScore: qualification.result.scoreBreakdown.decisionAuthority.score,
+          infoQualityScore: qualification.result.scoreBreakdown.informationQuality.score,
+          totalScore: finalScore,
+          category: finalCategory,
+          confidence: qualification.result.confidence,
+          summary: injectionResult.isInjectionDetected
+            ? `[FLAGGED - Prompt Injection Attack Detected] ${qualification.result.summary}`
+            : dupResult.isDuplicate
+            ? `[FLAGGED - Duplicate Submission (${dupResult.reason})] ${qualification.result.summary}`
+            : qualification.result.summary,
+          scoreBreakdownJson: JSON.stringify(qualification.result.scoreBreakdown),
+          risksJson: JSON.stringify([
+            ...qualification.result.risks,
+            ...(injectionResult.isInjectionDetected ? ['Suspicious system prompt instructions detected in text'] : []),
+            ...(dupResult.isDuplicate ? [`Duplicate match: ${dupResult.reason}`] : []),
+          ]),
+          missingInfoJson: JSON.stringify(qualification.result.missingInformation),
+          recommendedAction: qualification.result.recommendedAction,
+          aiProvider: qualification.provider,
+          aiModel: qualification.model,
+          promptVersion: qualification.promptVersion,
+          isDemoMode: qualification.isDemoMode,
+        },
+      });
+
+      const followUpRecord = await tx.followUp.create({
+        data: {
+          leadId: lead.id,
+          subject: followUpDraft.subject,
+          body: followUpDraft.body,
+          category: finalCategory,
+          status: finalCategory === 'REVIEW_REQUIRED' ? 'DRAFT' : 'SENT',
+          recipientEmail: leadData.workEmail,
+          sentAt: finalCategory === 'REVIEW_REQUIRED' ? null : new Date(),
+        },
+      });
+
+      return { lead, followUpRecord };
     });
 
-    // 10. Update Lead Status
-    await prisma.lead.update({
-      where: { id: lead.id },
-      data: {
-        status: finalCategory === 'REVIEW_REQUIRED' ? 'IN_REVIEW' : 'SCORED',
-        category: finalCategory,
-        totalScore: finalScore,
-      },
-    });
-
-    // 11. Dispatch Integrations for non-review leads
+    // 8. Dispatch Integrations for non-review leads
     if (finalCategory !== 'REVIEW_REQUIRED') {
       await syncLeadToCRM({
         leadId: lead.id,
@@ -181,12 +196,12 @@ export async function POST(request: Request) {
       await sendEmailViaMailpit({
         to: leadData.workEmail,
         subject: followUpDraft.subject,
-        body: followUpDraft.body,
+        body: followUpRecord.body,
         leadId: lead.id,
       });
     }
 
-    // 12. Create Notifications & Audit Log
+    // 9. Create Notifications & Audit Log
     if (finalCategory === 'HOT') {
       await createInAppNotification({
         title: '🔥 Hot Lead Captured',

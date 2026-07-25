@@ -4,6 +4,7 @@ export interface PipelineStep {
   title: string;
   description: string;
   color: StepColor;
+  linkSlug?: string;
 }
 
 export interface PipelineBranchPath {
@@ -80,7 +81,7 @@ export const workflowShowcases: WorkflowShowcase[] = [
         title: 'COLD Path — On Response',
         paths: [
           { label: 'Responded', color: 'emerald', steps: [
-            { title: 'Re-score the Lead', description: 'Circumstances may have changed — check again.', color: 'emerald' },
+            { title: 'Re-score the Lead', description: 'Circumstances may have changed — runs through the full scoring orchestration again.', color: 'emerald', linkSlug: 'enterprise-lead-scoring-orchestration' },
             { title: 'Reactivate & Notify Sales', description: 'Bring them back into the active pipeline.', color: 'emerald' },
           ]},
           { label: 'No Response', color: 'muted', steps: [
@@ -232,7 +233,7 @@ export const workflowShowcases: WorkflowShowcase[] = [
           { label: 'WARM', color: 'amber', steps: [
             { title: 'Standard Follow-up', description: 'Drafted for review.', color: 'amber' },
             { title: 'Standard CRM Sync', description: 'Synced at normal priority.', color: 'amber' },
-            { title: 'Enter Nurture Sequence', description: 'Handed to the multi-touch nurture automation.', color: 'amber' },
+            { title: 'Enter Nurture Sequence', description: 'Handed to the multi-touch nurture automation.', color: 'amber', linkSlug: 'advanced-lead-nurture-sequence' },
           ]},
           { label: 'COLD', color: 'muted', steps: [
             { title: 'Low-Priority CRM Sync', description: 'Recorded, not urgent.', color: 'muted' },
