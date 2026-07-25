@@ -1,0 +1,74 @@
+{
+  "name": "LeadPilot AI - Daily Lead Digest Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 8 * * *" }]
+        }
+      },
+      "name": "Schedule Trigger (08:00 AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/daily-digest",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        }
+      },
+      "name": "Fetch Digest Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Format HTML digest email body\nconst data = $input.item.json;\nconst leads = data.leads || [];\n\nlet html = `<h2>LeadPilot AI - Daily Lead Digest</h2><p>Total Leads Captured: ${data.totalLeads}</p><ul>`;\nleads.forEach(l => {\n  html += `<li><strong>[${l.category}] ${l.fullName}</strong> (${l.companyName}) - Score: ${l.totalScore}/100</li>`;\n});\nhtml += `</ul>`;\n\nreturn { json: { subject: `LeadPilot AI Daily Digest - ${new Date().toLocaleDateString()}`, htmlBody: html } };"
+      },
+      "name": "Generate HTML Digest",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/send-notification",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "name": "Send Digest Email via Mailpit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [760, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (08:00 AM)": {
+      "main": [[{ "node": "Fetch Digest Data", "type": "main", "index": 0 }]]
+    },
+    "Fetch Digest Data": {
+      "main": [[{ "node": "Generate HTML Digest", "type": "main", "index": 0 }]]
+    },
+    "Generate HTML Digest": {
+      "main": [[{ "node": "Send Digest Email via Mailpit", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

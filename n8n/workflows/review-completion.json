@@ -1,0 +1,65 @@
+{
+  "name": "LeadPilot AI - Review Completion Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "review-completion",
+        "options": {}
+      },
+      "name": "Approval Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/sync-crm",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.body.leadId }) }}"
+      },
+      "name": "Sync Approved Lead to CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/generate-follow-up",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.body.leadId, sendImmediately: true }) }}"
+      },
+      "name": "Send Approved Follow-up Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [540, 300]
+    }
+  ],
+  "connections": {
+    "Approval Webhook Trigger": {
+      "main": [[{ "node": "Sync Approved Lead to CRM", "type": "main", "index": 0 }]]
+    },
+    "Sync Approved Lead to CRM": {
+      "main": [[{ "node": "Send Approved Follow-up Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

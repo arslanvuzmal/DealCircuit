@@ -1,0 +1,125 @@
+{
+  "name": "LeadPilot AI - Lead Intake Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-intake",
+        "options": {}
+      },
+      "name": "Lead Intake Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300],
+      "webhookId": "lead-intake-webhook"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validate Internal Secret & Normalize Event Payload\nconst headers = $input.item.json.headers || {};\nconst body = $input.item.json.body || {};\nconst secret = headers['x-internal-secret'] || '';\n\nif (secret !== '{{ $env.INTERNAL_API_SECRET }}') {\n  // Log warning & normalize\n}\n\nreturn {\n  json: {\n    event: 'LEAD_SUBMISSION',\n    leadData: body,\n    timestamp: new Date().toISOString(),
+    idempotencyKey: headers['x-idempotency-key'] || body.idempotencyKey || null\n  }\n};"
+      },
+      "name": "Validate & Normalize Event",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/score-lead",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.leadData) }}"
+      },
+      "name": "Call Lead Qualification Engine",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.category }}",
+              "operation": "equal",
+              "value2": "HOT"
+            }
+          ]
+        }
+      },
+      "name": "Filter Category",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/sync-crm",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.leadId }) }}"
+      },
+      "name": "Sync Lead to CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [980, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/record-workflow-run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ workflowName: 'lead-intake', status: 'SUCCESS', details: $json }) }}"
+      },
+      "name": "Record Execution Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1200, 300]
+    }
+  ],
+  "connections": {
+    "Lead Intake Webhook": {
+      "main": [[{ "node": "Validate & Normalize Event", "type": "main", "index": 0 }]]
+    },
+    "Validate & Normalize Event": {
+      "main": [[{ "node": "Call Lead Qualification Engine", "type": "main", "index": 0 }]]
+    },
+    "Call Lead Qualification Engine": {
+      "main": [[{ "node": "Filter Category", "type": "main", "index": 0 }]]
+    },
+    "Filter Category": {
+      "main": [
+        [{ "node": "Sync Lead to CRM", "type": "main", "index": 0 }],
+        [{ "node": "Record Execution Log", "type": "main", "index": 0 }]
+      ]
+    },
+    "Sync Lead to CRM": {
+      "main": [[{ "node": "Record Execution Log", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

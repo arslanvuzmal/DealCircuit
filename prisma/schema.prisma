@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         String     @default("REVIEWER") // ADMIN, REVIEWER, VIEWER
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  approvals    Approval[]
+}
+
+model Lead {
+  id                 String             @id @default(cuid())
+  fullName           String
+  workEmail          String
+  normalizedEmail    String
+  phoneNumber        String?
+  normalizedPhone    String?
+  companyName        String
+  companyWebsite     String?
+  industry           String
+  companySize        String
+  serviceRequired    String
+  budgetRange        String
+  desiredTimeline    String
+  decisionAuthority  String
+  projectDescription String
+  leadSource         String
+  idempotencyKey     String?            @unique
+  status             String             @default("NEW") // NEW, SCORED, IN_REVIEW, APPROVED, REJECTED, ARCHIVED
+  category           String?            // HOT, WARM, COLD, REVIEW_REQUIRED
+  totalScore         Int?
+  isDuplicate        Boolean            @default(false)
+  duplicateOfId      String?
+  crmSyncStatus      String             @default("PENDING") // PENDING, SYNCED, FAILED
+  crmExternalId      String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  scores             LeadScore[]
+  followUps          FollowUp[]
+  approvals          Approval[]
+  integrationEvents  IntegrationEvent[]
+}
+
+model LeadScore {
+  id                 String   @id @default(cuid())
+  leadId             String
+  lead               Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  budgetFitScore     Int
+  serviceFitScore    Int
+  urgencyScore       Int
+  authorityScore     Int
+  infoQualityScore   Int
+  totalScore         Int
+  category           String
+  confidence         Float
+  summary            String
+  scoreBreakdownJson String   // JSON string of criteria
+  risksJson          String   // JSON array string
+  missingInfoJson    String   // JSON array string
+  recommendedAction  String
+  aiProvider         String
+  aiModel            String
+  promptVersion      String
+  isDemoMode         Boolean  @default(true)
+  createdAt          DateTime @default(now())
+}
+
+model ScoringRule {
+  id           String   @id @default(cuid())
+  criterionKey String   @unique // budgetFit, serviceFit, urgency, authority, infoQuality
+  name         String
+  maxScore     Int
+  weight       Float
+  configJson   String   // JSON string of scoring thresholds
+  updatedBy    String
+  updatedAt    DateTime @updatedAt
+}
+
+model FollowUp {
+  id             String    @id @default(cuid())
+  leadId         String
+  lead           Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  subject        String
+  body           String
+  category       String
+  status         String    @default("DRAFT") // DRAFT, APPROVED, SENT, FAILED
+  sentAt         DateTime?
+  emailAdapter   String    @default("Mailpit")
+  recipientEmail String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Approval {
+  id               String   @id @default(cuid())
+  leadId           String
+  lead             Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  action           String   // APPROVE, REJECT, ADJUST_SCORE, REQUEST_INFO
+  previousCategory String?
+  newCategory      String?
+  previousScore    Int?
+  newScore         Int?
+  notes            String?
+  createdAt        DateTime @default(now())
+}
+
+model IntegrationEvent {
+  id          String    @id @default(cuid())
+  leadId      String
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  system      String    // CRM, MAILPIT, SLACK, N8N
+  eventType   String
+  status      String    @default("PENDING") // SUCCESS, FAILED, RETRYING
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  lastError   String?
+  nextRetryAt DateTime?
+  payloadJson String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model WorkflowRun {
+  id           String    @id @default(cuid())
+  workflowName String
+  executionId  String?
+  status       String    // SUCCESS, FAILED, RUNNING
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  detailsJson  String?
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  userEmail     String?
+  action        String
+  entityType    String
+  entityId      String
+  previousValue String?
+  newValue      String?
+  reason        String?
+  ipAddress     String?
+  createdAt     DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   // HOT_LEAD, REVIEW_NEEDED, SYNC_ERROR, SYSTEM
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  valueJson String
+  updatedAt DateTime @updatedAt
+}
