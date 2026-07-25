@@ -1,0 +1,323 @@
+{
+  "name": "LeadPilot AI - Multi-Stage CRM Sync Escalation & Resilience",
+  "meta": {
+    "description": "Portfolio template: resilient CRM synchronization with error-type-aware retry strategy, exponential backoff, and human escalation on repeated failure. Demonstrates Switch-based error classification, differentiated Wait/retry cadences per failure type, and a maxAttempts escalation gate. Not part of the 4 core application-contract workflows - kept under templates/ as a complexity showcase.",
+    "nodeCount": 24
+  },
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "crm-sync-escalation", "options": {} },
+      "name": "CRM Sync Request Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [80, 460],
+      "webhookId": "crm-sync-escalation-webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/sync-crm",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.body.leadId }) }}",
+        "options": { "timeout": 10000 }
+      },
+      "name": "Attempt Primary CRM Sync",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [300, 460]
+    },
+    {
+      "parameters": { "conditions": { "boolean": [{ "value1": "={{ $json.success || false }}", "value2": true }] } },
+      "name": "IF: Sync Succeeded",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [520, 460]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/record-workflow-run",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ workflowName: 'crm-sync-escalation', status: 'SUCCESS', details: $json }) }}"
+      },
+      "name": "Record Success Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [740, 260]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.errorType || 'UNKNOWN' }}",
+        "rules": {
+          "rules": [
+            { "value2": "AUTH_ERROR", "output": 0 },
+            { "value2": "RATE_LIMIT", "output": 1 },
+            { "value2": "TIMEOUT", "output": 2 }
+          ]
+        },
+        "fallbackOutput": 3
+      },
+      "name": "Switch: Classify Error Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [740, 560]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/send-notification",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ type: 'SLACK_ALERT', title: 'CRM Credentials Likely Expired', leadId: $json.leadId }) }}"
+      },
+      "name": "AUTH_ERROR: Alert Ops (Credentials)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [960, 100]
+    },
+    {
+      "parameters": {},
+      "name": "AUTH_ERROR: Halt Retries (Won't Self-Resolve)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1180, 100]
+    },
+    {
+      "parameters": { "amount": 60, "unit": "seconds" },
+      "name": "RATE_LIMIT: Wait 60s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [960, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/sync-crm",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.leadId }) }}"
+      },
+      "name": "RATE_LIMIT: Retry Attempt 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1180, 300]
+    },
+    {
+      "parameters": { "conditions": { "boolean": [{ "value1": "={{ $json.success || false }}", "value2": true }] } },
+      "name": "IF: Rate Limit Retry 1 Succeeded",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1400, 300]
+    },
+    {
+      "parameters": { "amount": 5, "unit": "minutes" },
+      "name": "RATE_LIMIT: Wait 5min (Backoff)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1620, 380]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/sync-crm",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.leadId }) }}"
+      },
+      "name": "RATE_LIMIT: Retry Attempt 2 (Final)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1840, 380]
+    },
+    {
+      "parameters": { "amount": 10, "unit": "seconds" },
+      "name": "TIMEOUT: Fast Wait 10s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [960, 560]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/sync-crm",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.leadId }) }}"
+      },
+      "name": "TIMEOUT: Retry Attempt 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1180, 560]
+    },
+    {
+      "parameters": { "conditions": { "boolean": [{ "value1": "={{ $json.success || false }}", "value2": true }] } },
+      "name": "IF: Timeout Retry 1 Succeeded",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1400, 560]
+    },
+    {
+      "parameters": { "amount": 2, "unit": "minutes" },
+      "name": "TIMEOUT: Wait 2min (Backoff)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1620, 640]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/sync-crm",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.leadId }) }}"
+      },
+      "name": "TIMEOUT: Retry Attempt 2 (Final)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1840, 640]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/send-notification",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ type: 'SLACK_ALERT', title: 'Unclassified CRM Sync Failure - Full Context Logged', leadId: $json.leadId }) }}"
+      },
+      "name": "UNKNOWN: Log Full Error Context & Escalate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [960, 780]
+    },
+    {
+      "parameters": {},
+      "name": "Merge: All Escalation Paths",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [2080, 500]
+    },
+    {
+      "parameters": {
+        "conditions": { "number": [{ "value1": "={{ $json.attempts || 1 }}", "operation": "largerEqual", "value2": 3 }] }
+      },
+      "name": "IF: Max Attempts Reached",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [2300, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/leads/{{ $json.leadId }}/reprocess",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] }
+      },
+      "name": "Flag Lead for Manual Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2520, 420]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/send-notification",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ type: 'SYNC_ERROR', title: 'CRM Sync Exhausted All Retries', leadId: $json.leadId }) }}"
+      },
+      "name": "Create High-Priority Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2740, 420]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/record-workflow-run",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ workflowName: 'crm-sync-escalation', status: 'FAILED', details: $json }) }}"
+      },
+      "name": "Record Escalation Outcome",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2960, 500]
+    }
+  ],
+  "connections": {
+    "CRM Sync Request Webhook": { "main": [[{ "node": "Attempt Primary CRM Sync", "type": "main", "index": 0 }]] },
+    "Attempt Primary CRM Sync": { "main": [[{ "node": "IF: Sync Succeeded", "type": "main", "index": 0 }]] },
+    "IF: Sync Succeeded": {
+      "main": [
+        [{ "node": "Record Success Event", "type": "main", "index": 0 }],
+        [{ "node": "Switch: Classify Error Type", "type": "main", "index": 0 }]
+      ]
+    },
+    "Switch: Classify Error Type": {
+      "main": [
+        [{ "node": "AUTH_ERROR: Alert Ops (Credentials)", "type": "main", "index": 0 }],
+        [{ "node": "RATE_LIMIT: Wait 60s", "type": "main", "index": 0 }],
+        [{ "node": "TIMEOUT: Fast Wait 10s", "type": "main", "index": 0 }],
+        [{ "node": "UNKNOWN: Log Full Error Context & Escalate", "type": "main", "index": 0 }]
+      ]
+    },
+    "AUTH_ERROR: Alert Ops (Credentials)": { "main": [[{ "node": "AUTH_ERROR: Halt Retries (Won't Self-Resolve)", "type": "main", "index": 0 }]] },
+    "AUTH_ERROR: Halt Retries (Won't Self-Resolve)": { "main": [[{ "node": "Merge: All Escalation Paths", "type": "main", "index": 0 }]] },
+    "RATE_LIMIT: Wait 60s": { "main": [[{ "node": "RATE_LIMIT: Retry Attempt 1", "type": "main", "index": 0 }]] },
+    "RATE_LIMIT: Retry Attempt 1": { "main": [[{ "node": "IF: Rate Limit Retry 1 Succeeded", "type": "main", "index": 0 }]] },
+    "IF: Rate Limit Retry 1 Succeeded": {
+      "main": [
+        [{ "node": "Merge: All Escalation Paths", "type": "main", "index": 0 }],
+        [{ "node": "RATE_LIMIT: Wait 5min (Backoff)", "type": "main", "index": 0 }]
+      ]
+    },
+    "RATE_LIMIT: Wait 5min (Backoff)": { "main": [[{ "node": "RATE_LIMIT: Retry Attempt 2 (Final)", "type": "main", "index": 0 }]] },
+    "RATE_LIMIT: Retry Attempt 2 (Final)": { "main": [[{ "node": "Merge: All Escalation Paths", "type": "main", "index": 0 }]] },
+    "TIMEOUT: Fast Wait 10s": { "main": [[{ "node": "TIMEOUT: Retry Attempt 1", "type": "main", "index": 0 }]] },
+    "TIMEOUT: Retry Attempt 1": { "main": [[{ "node": "IF: Timeout Retry 1 Succeeded", "type": "main", "index": 0 }]] },
+    "IF: Timeout Retry 1 Succeeded": {
+      "main": [
+        [{ "node": "Merge: All Escalation Paths", "type": "main", "index": 0 }],
+        [{ "node": "TIMEOUT: Wait 2min (Backoff)", "type": "main", "index": 0 }]
+      ]
+    },
+    "TIMEOUT: Wait 2min (Backoff)": { "main": [[{ "node": "TIMEOUT: Retry Attempt 2 (Final)", "type": "main", "index": 0 }]] },
+    "TIMEOUT: Retry Attempt 2 (Final)": { "main": [[{ "node": "Merge: All Escalation Paths", "type": "main", "index": 0 }]] },
+    "UNKNOWN: Log Full Error Context & Escalate": { "main": [[{ "node": "Merge: All Escalation Paths", "type": "main", "index": 0 }]] },
+    "Merge: All Escalation Paths": { "main": [[{ "node": "IF: Max Attempts Reached", "type": "main", "index": 0 }]] },
+    "IF: Max Attempts Reached": {
+      "main": [
+        [{ "node": "Flag Lead for Manual Review", "type": "main", "index": 0 }],
+        [{ "node": "Record Escalation Outcome", "type": "main", "index": 0 }]
+      ]
+    },
+    "Flag Lead for Manual Review": { "main": [[{ "node": "Create High-Priority Notification", "type": "main", "index": 0 }]] },
+    "Create High-Priority Notification": { "main": [[{ "node": "Record Escalation Outcome", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
