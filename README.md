@@ -2,7 +2,7 @@
 
 > Enterprise-Grade Intelligent Lead Qualification, CRM Synchronisation & Follow-Up Automation Platform
 
-LeadPilot AI is an end-to-end B2B lead capture, qualification scoring, AI safety defense, and workflow automation system built with Next.js 14, TypeScript, Tailwind CSS, Prisma ORM, PostgreSQL/SQLite, and n8n.
+LeadPilot AI is an end-to-end B2B lead capture, qualification scoring, AI safety defense, and workflow automation system built with Next.js 14, TypeScript, Tailwind CSS, Prisma ORM, PostgreSQL, and n8n.
 
 ---
 
@@ -14,20 +14,20 @@ LeadPilot AI is an end-to-end B2B lead capture, qualification scoring, AI safety
 - **Multi-Factor Duplicate Detection**: Identifies duplicates by normalized email, phone, company + contact name, and idempotency key.
 - **Human-in-the-Loop Review Queue**: Full administrator interface for adjusting scores, changing categories, editing follow-up drafts, and logging decision audit trails.
 - **n8n Workflow Automation**: 4 production-grade importable workflows in `n8n/workflows/` (Lead Intake, Daily Digest, Failed Event Retry, Review Completion).
-- **100% Offline Demo Mode (`DEMO_MODE=true`)**: Operates without external paid API keys using Mailpit SMTP, a built-in Demo CRM adapter, and SQLite/PostgreSQL.
+- **100% Offline Demo Mode (`DEMO_MODE=true`)**: Operates without external paid API keys using Mailpit SMTP, a built-in Demo CRM adapter, and PostgreSQL.
 
 ---
 
-## Quick Start (Demo Mode)
+## Quick Start
 
 ### Prerequisites
-- Node.js 18+ / npm 10+
-- Docker Compose (optional for local Mailpit & PostgreSQL)
+- Node.js 20.x / npm 10+
+- PostgreSQL database (or Docker Compose)
 
 ### 1. Installation
 ```bash
-git clone https://github.com/arslanvuzmal/leadpilot-avuzmal.git
-cd leadpilot-avuzmal
+git clone https://github.com/arslanvuzmal/leadpilot-ai.git
+cd leadpilot-ai
 npm install
 ```
 
@@ -35,12 +35,12 @@ npm install
 ```bash
 cp .env.example .env
 ```
-Default `.env` is configured for zero-setup demo mode (`DEMO_MODE="true"`, `DATABASE_URL="file:./dev.db"`).
+Populate `DATABASE_URL` and `DIRECT_URL` with your PostgreSQL database credentials.
 
-### 3. Database Initialization & Seeding
+### 3. Database Migration & Seeding
 ```bash
-npx prisma db push
-npm run db:seed
+npx prisma migrate deploy
+ALLOW_PRODUCTION_SEED="true" npm run db:seed
 ```
 
 ### 4. Run Development Server
@@ -76,10 +76,10 @@ leadpilot-ai/
 │   └── observability/    # Audit Logger & Workflow Execution Recorder
 ├── n8n/
 │   └── workflows/        # 4 Production-grade Importable JSON Workflows
-├── prisma/               # Database Schema (11 Entities) & SQLite DB
+├── prisma/               # Database Schema (11 Entities) & Migrations
 ├── scripts/              # Seed Script (8 Test Scenarios)
 ├── tests/                # Vitest Unit & Integration Test Suite
-└── docs/                 # Complete Architecture & API Documentation
+└── docs/                 # Complete Architecture & Deployment Documentation
 ```
 
 ---
@@ -87,14 +87,8 @@ leadpilot-ai/
 ## Running Verification & Tests
 
 ```bash
-# Type Check
-npm run type-check
-
-# Run Unit & Integration Tests
-npm run test
-
-# Production Build
-npm run build
+# Full Verification Suite
+npm run verify
 ```
 
 ---

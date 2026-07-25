@@ -2,13 +2,28 @@ name: LeadPilot AI CI
 
 on:
   push:
-    branches: [ main, antigravity/leadpilot-v1 ]
+    branches: [ main, fix/vercel-postgres-deployment, antigravity/leadpilot-v1 ]
   pull_request:
     branches: [ main ]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: leadpilot_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -19,20 +34,24 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Initialize Prisma Schema & Database
-        run: npx prisma db push
+      - name: Deploy Prisma Migrations (PostgreSQL)
+        run: npx prisma migrate deploy
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
+          DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
 
       - name: Seed Demo Database
         run: npm run db:seed
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
+          DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
+          ALLOW_PRODUCTION_SEED: "true"
+          DEMO_MODE: "true"
 
       - name: Run Type Check
         run: npm run type-check
@@ -44,6 +63,7 @@ jobs:
         run: npm run build
         env:
           DEMO_MODE: "true"
-          DATABASE_URL: "file:./dev.db"
-          JWT_SECRET: "ci_jwt_secret_key"
-          INTERNAL_API_SECRET: "ci_internal_secret_key"
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
+          DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
+          JWT_SECRET: "ci-only-long-random-secret-key-12345"
+          INTERNAL_API_SECRET: "ci-only-long-internal-secret-key-12345"

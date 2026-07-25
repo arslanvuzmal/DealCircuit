@@ -2,6 +2,7 @@ import React from 'react';
 import { prisma } from '@/lib/db';
 import { Bell, Flame, AlertTriangle, XCircle, CheckCircle2 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function NotificationsPage() {

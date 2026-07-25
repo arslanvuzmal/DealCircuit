@@ -18,6 +18,7 @@ import {
   Layers,
 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function OverviewDashboard() {
@@ -38,12 +39,6 @@ export default async function OverviewDashboard() {
   // Lead Source Groupings
   const sourcesGroup = await prisma.lead.groupBy({
     by: ['leadSource'],
-    _count: { id: true },
-  });
-
-  // Services Groupings
-  const servicesGroup = await prisma.lead.groupBy({
-    by: ['serviceRequired'],
     _count: { id: true },
   });
 

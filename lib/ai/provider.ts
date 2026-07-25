@@ -35,7 +35,7 @@ export class OpenAIProvider implements AIProvider {
   private apiKey: string;
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || env.OPENAI_API_KEY;
+    this.apiKey = apiKey || env.OPENAI_API_KEY || '';
   }
 
   async qualifyLead(lead: LeadDataInput, config?: ScoringRuleConfig): Promise<AIQualificationResponse> {

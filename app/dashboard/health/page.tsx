@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { isDemoMode } from '@/lib/env';
 import { Activity, CheckCircle2, ShieldCheck, Database, Mail, Radio } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function HealthPage() {
@@ -42,7 +43,7 @@ export default async function HealthPage() {
             </span>
           </div>
           <div className="text-dark-muted space-y-1">
-            <div>Type: SQLite / PostgreSQL (Prisma)</div>
+            <div>Type: PostgreSQL (Prisma ORM)</div>
             <div>Total Lead Entities: {leadCount}</div>
           </div>
         </div>

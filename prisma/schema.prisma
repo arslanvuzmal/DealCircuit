@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -51,6 +52,13 @@ model Lead {
   followUps          FollowUp[]
   approvals          Approval[]
   integrationEvents  IntegrationEvent[]
+
+  @@index([normalizedEmail])
+  @@index([normalizedPhone])
+  @@index([createdAt])
+  @@index([status])
+  @@index([category])
+  @@index([crmSyncStatus])
 }
 
 model LeadScore {
@@ -66,9 +74,9 @@ model LeadScore {
   category           String
   confidence         Float
   summary            String
-  scoreBreakdownJson String   // JSON string of criteria
-  risksJson          String   // JSON array string
-  missingInfoJson    String   // JSON array string
+  scoreBreakdownJson String   @db.Text
+  risksJson          String   @db.Text
+  missingInfoJson    String   @db.Text
   recommendedAction  String
   aiProvider         String
   aiModel            String
@@ -83,7 +91,7 @@ model ScoringRule {
   name         String
   maxScore     Int
   weight       Float
-  configJson   String   // JSON string of scoring thresholds
+  configJson   String   @db.Text
   updatedBy    String
   updatedAt    DateTime @updatedAt
 }
@@ -93,7 +101,7 @@ model FollowUp {
   leadId         String
   lead           Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
   subject        String
-  body           String
+  body           String    @db.Text
   category       String
   status         String    @default("DRAFT") // DRAFT, APPROVED, SENT, FAILED
   sentAt         DateTime?
@@ -106,7 +114,7 @@ model FollowUp {
 model Approval {
   id               String   @id @default(cuid())
   leadId           String
-  lead             Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead             Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
   userId           String
   user             User     @relation(fields: [userId], references: [id])
   action           String   // APPROVE, REJECT, ADJUST_SCORE, REQUEST_INFO
@@ -114,7 +122,7 @@ model Approval {
   newCategory      String?
   previousScore    Int?
   newScore         Int?
-  notes            String?
+  notes            String?  @db.Text
   createdAt        DateTime @default(now())
 }
 
@@ -127,11 +135,14 @@ model IntegrationEvent {
   status      String    @default("PENDING") // SUCCESS, FAILED, RETRYING
   attempts    Int       @default(0)
   maxAttempts Int       @default(3)
-  lastError   String?
+  lastError   String?   @db.Text
   nextRetryAt DateTime?
-  payloadJson String
+  payloadJson String    @db.Text
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([nextRetryAt])
 }
 
 model WorkflowRun {
@@ -141,7 +152,10 @@ model WorkflowRun {
   status       String    // SUCCESS, FAILED, RUNNING
   startedAt    DateTime  @default(now())
   completedAt  DateTime?
-  detailsJson  String?
+  detailsJson  String?   @db.Text
+
+  @@index([status])
+  @@index([startedAt])
 }
 
 model AuditLog {
@@ -151,25 +165,29 @@ model AuditLog {
   action        String
   entityType    String
   entityId      String
-  previousValue String?
-  newValue      String?
-  reason        String?
+  previousValue String?  @db.Text
+  newValue      String?  @db.Text
+  reason        String?  @db.Text
   ipAddress     String?
   createdAt     DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model Notification {
   id        String   @id @default(cuid())
   title     String
-  message   String
+  message   String   @db.Text
   type      String   // HOT_LEAD, REVIEW_NEEDED, SYNC_ERROR, SYSTEM
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model SystemSetting {
   id        String   @id @default(cuid())
   key       String   @unique
-  valueJson String
+  valueJson String   @db.Text
   updatedAt DateTime @updatedAt
 }
