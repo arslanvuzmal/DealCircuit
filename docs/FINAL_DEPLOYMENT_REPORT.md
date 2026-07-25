@@ -11,7 +11,7 @@
 
 ## 2. Local Verification & Test Results
 - **Dependencies**: `npm install` completed with 0 errors.
-- **Prisma Migration**: `n8n / Prisma db push` synchronized SQLite database `prisma/dev.db`.
+- **Prisma Migration**: `npx prisma db push` synchronized SQLite database `prisma/dev.db`.
 - **Database Seeding**: `npm run db:seed` seeded 8 realistic test scenarios.
 - **Type Checking**: `npm run type-check` passed with 0 errors.
 - **Unit & Integration Tests**: `npm run test` passed (4/4 Vitest tests).
@@ -59,9 +59,9 @@
 ---
 
 ## 5. GitHub & Vercel Deployment Specifications
+- **GitHub Owner Account**: `arslanvuzmal`
 - **Repository Name**: `leadpilot-avuzmal`
-- **Target Remote**: `https://github.com/avuzmal/leadpilot-avuzmal`
-- **Git Commit Hash**: `bc4fb34`
+- **Target Remote**: `https://github.com/arslanvuzmal/leadpilot-avuzmal.git`
 - **Vercel Target Slug**: `leadpilot-avuzmal`
 - **Target URL**: `https://leadpilot-avuzmal.vercel.app`
 
@@ -71,12 +71,13 @@
 
 ```
 LOCAL PROJECT:     C:\Users\laptopzone\Desktop\LeadPilot AI
-GITHUB:            https://github.com/avuzmal/leadpilot-avuzmal (Main branch initialized)
-PUBLIC DASHBOARD:  https://leadpilot-avuzmal.vercel.app (Prepared for Vercel deployment)
+GITHUB ACCOUNT:    arslanvuzmal
+GITHUB REPO:       https://github.com/arslanvuzmal/leadpilot-avuzmal
+PUBLIC DASHBOARD:  https://leadpilot-avuzmal.vercel.app
 DATABASE:          Prisma ORM / Supabase PostgreSQL (SQLite dev.db active in Demo Mode)
 N8N:               Railway n8n (4 Workflows in n8n/workflows/)
 BUILD:             SUCCESS (38 routes compiled)
 TESTS:             SUCCESS (4/4 unit tests passed, 0 type errors)
 DEMO LOGIN:        admin@leadpilot.ai / admin123
-KNOWN BLOCKERS:    Authenticate gh CLI (`gh auth login`) to push to remote GitHub repository.
+NEXT STEP:         Run `gh auth login` to push `main` branch directly to github.com/arslanvuzmal/leadpilot-avuzmal.git
 ```

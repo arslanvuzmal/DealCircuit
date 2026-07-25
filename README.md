@@ -26,8 +26,8 @@ LeadPilot AI is an end-to-end B2B lead capture, qualification scoring, AI safety
 
 ### 1. Installation
 ```bash
-git clone https://github.com/your-repo/leadpilot-ai.git
-cd leadpilot-ai
+git clone https://github.com/arslanvuzmal/leadpilot-avuzmal.git
+cd leadpilot-avuzmal
 npm install
 ```
 
@@ -39,7 +39,6 @@ Default `.env` is configured for zero-setup demo mode (`DEMO_MODE="true"`, `DATA
 
 ### 3. Database Initialization & Seeding
 ```bash
-n8n / Prisma setup:
 npx prisma db push
 npm run db:seed
 ```
