@@ -1,39 +1,11 @@
 import React from 'react';
+import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { Workflow, CheckCircle2, XCircle, GitBranch, ArrowUpRight, Zap } from 'lucide-react';
+import { workflowShowcases } from '@/lib/workflowShowcase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-const GITHUB_REPO = 'https://github.com/arslanvuzmal/leadpilot-ai';
-const TEMPLATE_BRANCH = 'main';
-
-const complexAutomationTemplates = [
-  {
-    name: 'Advanced Multi-Touch Nurture Sequence',
-    file: 'advanced-lead-nurture-sequence.json',
-    nodeCount: 27,
-    description:
-      'Long-running, time-delayed nurture cadence for WARM/COLD leads. Branches by category, stages Wait delays across days/weeks, routes by engagement level, and re-scores leads that respond late.',
-    tags: ['Wait delays', 'Switch routing', 'Re-scoring', 'Multi-week cadence'],
-  },
-  {
-    name: 'Multi-Stage CRM Sync Escalation & Resilience',
-    file: 'multi-stage-crm-escalation.json',
-    nodeCount: 23,
-    description:
-      'Resilient CRM sync with error-type-aware retries: auth failures halt and alert immediately, rate limits back off exponentially, timeouts retry fast then slow, all converging into a maxAttempts human-escalation gate.',
-    tags: ['Error classification', 'Exponential backoff', 'Human escalation'],
-  },
-  {
-    name: 'Enterprise Lead Scoring Orchestration',
-    file: 'enterprise-lead-scoring-orchestration.json',
-    nodeCount: 26,
-    description:
-      'Runs deterministic and AI scoring in true parallel, reconciles discrepancies with a safety-first fallback, applies confidence-based review routing, then fans out into three simultaneous category-specific action chains.',
-    tags: ['Parallel branches', 'Score reconciliation', 'Fan-out / fan-in'],
-  },
-];
 
 export default async function WorkflowRunsPage() {
   const runs = await prisma.workflowRun.findMany({
@@ -59,20 +31,19 @@ export default async function WorkflowRunsPage() {
           <h2 className="text-sm font-bold text-dark-bright flex items-center gap-2">
             <Zap className="w-4 h-4 text-brand-amber" /> Complex Automation Templates
           </h2>
-          <span className="text-[10px] text-dark-muted font-mono">{complexAutomationTemplates.length} showcase workflows</span>
+          <span className="text-[10px] text-dark-muted font-mono">{workflowShowcases.length} showcase workflows</span>
         </div>
         <p className="text-xs text-dark-muted -mt-2">
           Beyond the 4 core production workflows above, these templates demonstrate the depth of automation
           n8n can orchestrate for this platform — multi-week nurture cadences, resilient error-handling chains,
-          and true parallel scoring orchestration. Each link opens the full, real, importable workflow JSON.
+          and true parallel scoring orchestration. Each card opens a full pipeline breakdown: what it does for
+          your business, the visual automation flow, and the real underlying workflow JSON.
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {complexAutomationTemplates.map((tpl) => (
-            <a
-              key={tpl.file}
-              href={`${GITHUB_REPO}/blob/${TEMPLATE_BRANCH}/n8n/workflows/templates/${tpl.file}`}
-              target="_blank"
-              rel="noreferrer"
+          {workflowShowcases.map((tpl) => (
+            <Link
+              key={tpl.slug}
+              href={`/dashboard/workflow-runs/${tpl.slug}`}
               className="group bg-dark-bg/60 border border-dark-border hover:border-brand-cyan rounded-xl p-4 space-y-3 text-xs transition"
             >
               <div className="flex items-start justify-between gap-2">
@@ -82,7 +53,7 @@ export default async function WorkflowRunsPage() {
               <div className="flex items-center gap-1.5 text-brand-purple font-mono font-bold">
                 <GitBranch className="w-3.5 h-3.5" /> {tpl.nodeCount} nodes
               </div>
-              <p className="text-dark-muted leading-relaxed">{tpl.description}</p>
+              <p className="text-dark-muted leading-relaxed">{tpl.tagline}</p>
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {tpl.tags.map((tag) => (
                   <span
@@ -93,7 +64,7 @@ export default async function WorkflowRunsPage() {
                   </span>
                 ))}
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
