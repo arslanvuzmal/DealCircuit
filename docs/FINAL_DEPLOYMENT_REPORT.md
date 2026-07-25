@@ -60,10 +60,10 @@
 
 ## 5. GitHub & Vercel Deployment Specifications
 - **GitHub Owner Account**: `arslanvuzmal`
-- **Repository Name**: `leadpilot-avuzmal`
-- **Target Remote**: `https://github.com/arslanvuzmal/leadpilot-avuzmal.git`
-- **Vercel Target Slug**: `leadpilot-avuzmal`
-- **Target URL**: `https://leadpilot-avuzmal.vercel.app`
+- **Repository Name**: `leadpilot-ai`
+- **Live GitHub URL**: `https://github.com/arslanvuzmal/leadpilot-ai`
+- **Vercel Target Slug**: `leadpilot-ai-avuzmal`
+- **Target URL**: `https://leadpilot-ai-avuzmal.vercel.app`
 
 ---
 
@@ -72,12 +72,12 @@
 ```
 LOCAL PROJECT:     C:\Users\laptopzone\Desktop\LeadPilot AI
 GITHUB ACCOUNT:    arslanvuzmal
-GITHUB REPO:       https://github.com/arslanvuzmal/leadpilot-avuzmal
-PUBLIC DASHBOARD:  https://leadpilot-avuzmal.vercel.app
+GITHUB REPO:       https://github.com/arslanvuzmal/leadpilot-ai (PUBLISHED & LIVE)
+PUBLIC DASHBOARD:  https://leadpilot-ai-avuzmal.vercel.app
 DATABASE:          Prisma ORM / Supabase PostgreSQL (SQLite dev.db active in Demo Mode)
 N8N:               Railway n8n (4 Workflows in n8n/workflows/)
 BUILD:             SUCCESS (38 routes compiled)
 TESTS:             SUCCESS (4/4 unit tests passed, 0 type errors)
 DEMO LOGIN:        admin@leadpilot.ai / admin123
-NEXT STEP:         Run `gh auth login` to push `main` branch directly to github.com/arslanvuzmal/leadpilot-avuzmal.git
+STATUS:            COMPLETE & PUBLISHED
 ```
