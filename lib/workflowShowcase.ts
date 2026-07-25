@@ -22,7 +22,8 @@ export interface WorkflowShowcase {
   name: string;
   tagline: string;
   nodeCount: number;
-  file: string;
+  file?: string;
+  liveUrl?: string;
   tags: string[];
   businessNarrative: string[];
   pipeline: PipelineSection[];
@@ -30,6 +31,68 @@ export interface WorkflowShowcase {
 }
 
 export const workflowShowcases: WorkflowShowcase[] = [
+  {
+    slug: 'universal-lead-intake-orchestration',
+    name: 'Universal Lead Intake & Sales Orchestration',
+    tagline:
+      'Not a template — this one is live in n8n Cloud right now, built node by node against the real production API and ready to demo.',
+    nodeCount: 19,
+    liveUrl: 'https://trainingaccounttttttttttt.app.n8n.cloud/workflow/xaWCJLRDfd6YjyFG',
+    tags: ['Live in n8n Cloud', 'AI Agent (GPT-5)', 'Real API integration', 'Multi-channel fan-out'],
+    businessNarrative: [
+      "Unlike the three templates below, this automation isn't a JSON file sitting in a repository — it's live, right now, inside the n8n Cloud account. It was built and validated node by node through n8n's own official Workflow SDK before a single piece of it was saved.",
+      'Any external form, ad platform, or lead source can POST to this workflow’s public webhook. It normalizes whatever fields arrive, forwards the lead straight into the real LeadPilot AI qualification API — the same one powering this dashboard — and gets back a genuine category and score. A GPT-5 agent then turns that raw result into a sales-ready brief a rep can act on immediately, not just a category label.',
+      'Hot leads get an instant Slack alert and a fast email reply within seconds. Warm leads get a softer nurture touch and a lower-urgency Slack ping. Leads the AI can’t confidently classify are escalated to a manager — and escalated again automatically if nobody has picked them up after four hours. Nothing sits unseen, and every failure is caught by a dedicated error-alert workflow instead of failing silently.',
+    ],
+    pipeline: [
+      { type: 'step', step: { title: 'Universal Lead Intake', description: 'A public webhook that any external form, ad platform, or CRM can POST a lead to.', color: 'cyan' } },
+      { type: 'step', step: { title: 'Normalize Lead Data', description: 'Maps whatever fields arrive into the exact shape the LeadPilot API expects, with safe fallbacks for missing fields.', color: 'cyan' } },
+      {
+        type: 'branch',
+        title: 'Required Fields Present?',
+        paths: [
+          { label: 'Valid', color: 'purple', steps: [
+            { title: 'Submit to LeadPilot API', description: 'The real production /api/leads endpoint — genuine AI qualification, not a simulation.', color: 'purple' },
+          ]},
+          { label: 'Invalid', color: 'muted', steps: [
+            { title: 'Respond 400 Error', description: 'Rejected immediately with a clear error message.', color: 'muted' },
+          ]},
+        ],
+      },
+      { type: 'step', step: { title: 'Respond Immediately to Caller', description: 'The webhook replies right away with the lead ID, category, and score — the caller is never kept waiting on what happens next.', color: 'purple' } },
+      { type: 'step', step: { title: 'AI Sales Brief Agent', description: 'A GPT-5 agent turns the raw category and score into a punchy, actionable brief plus a recommended next step and urgency rating.', color: 'purple' } },
+      {
+        type: 'branch',
+        title: 'Route by Lead Category — Fan-Out to the Right Channel',
+        paths: [
+          { label: 'HOT', color: 'emerald', steps: [
+            { title: 'Alert Sales Team (Slack)', description: 'Posted instantly with the score, the brief, and a direct dashboard link.', color: 'emerald' },
+            { title: 'Send Instant Reply (Gmail)', description: 'The lead gets a fast, human-feeling response within seconds.', color: 'emerald' },
+          ]},
+          { label: 'WARM', color: 'amber', steps: [
+            { title: 'Send Nurture Email (Gmail)', description: 'A warmer, lower-pressure follow-up.', color: 'amber' },
+            { title: 'Notify Sales Team (Slack)', description: 'Lower-urgency heads-up so nothing is missed.', color: 'amber' },
+          ]},
+          { label: 'REVIEW REQUIRED', color: 'coral', steps: [
+            { title: 'Escalate to Manager (Slack)', description: 'The AI could not confidently classify this one — a human is looped in immediately.', color: 'coral' },
+            { title: 'Wait 4 Hours', description: 'Time for a person to act before anything further happens.', color: 'muted' },
+            { title: 'Urgent Escalation (Slack)', description: 'Still untouched after 4 hours? A second, more urgent alert fires automatically.', color: 'coral' },
+          ]},
+          { label: 'COLD', color: 'muted', steps: [
+            { title: 'Send Soft-Touch Reply (Gmail)', description: 'A light, no-pressure acknowledgment — the door stays open.', color: 'muted' },
+          ]},
+        ],
+      },
+      { type: 'step', step: { title: 'Failures Never Fail Silently', description: 'A dedicated Error Trigger workflow catches any node failure here and alerts the team on Slack automatically.', color: 'coral' } },
+    ],
+    technicalHighlights: [
+      '19 real nodes, built and validated programmatically via n8n’s official Workflow SDK, then created live in the n8n Cloud account — not just a JSON file in this repo',
+      'Genuinely calls the production LeadPilot AI /api/leads endpoint, so this automation and the dashboard share one real qualification result',
+      'A GPT-5 agent with a structured output schema writes a sales-ready brief and urgency rating for every lead, not just a raw category label',
+      'Immediate webhook response via a dedicated Respond to Webhook node, so the calling form is never kept waiting on Slack, Gmail, or the AI step to finish',
+      'A dedicated Error Trigger workflow is wired in as this workflow’s failure handler, so a broken node alerts the team instead of silently dropping a lead',
+    ],
+  },
   {
     slug: 'advanced-lead-nurture-sequence',
     name: 'Advanced Multi-Touch Nurture Sequence',

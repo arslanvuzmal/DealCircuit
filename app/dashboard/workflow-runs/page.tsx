@@ -115,6 +115,11 @@ export default async function WorkflowRunsPage() {
                 <span className="font-bold text-dark-bright text-sm leading-snug">{tpl.name}</span>
                 <ArrowUpRight className="w-4 h-4 text-dark-muted group-hover:text-brand-cyan transition flex-shrink-0" />
               </div>
+              {tpl.liveUrl && (
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-brand-emerald">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-emerald animate-pulse" /> LIVE IN N8N CLOUD
+                </div>
+              )}
               <div className="flex items-center gap-1.5 text-brand-purple font-mono font-bold">
                 <GitBranch className="w-3.5 h-3.5" /> {tpl.nodeCount} nodes
               </div>

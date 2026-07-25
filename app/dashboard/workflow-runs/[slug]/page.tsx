@@ -77,6 +77,11 @@ export default function WorkflowShowcasePage({ params }: { params: { slug: strin
         <h1 className="text-xl font-bold text-dark-bright tracking-tight">{workflow.name}</h1>
         <p className="text-sm text-dark-text leading-relaxed max-w-3xl">{workflow.tagline}</p>
         <div className="flex flex-wrap items-center gap-2 pt-1">
+          {workflow.liveUrl && (
+            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-emerald/10 border border-brand-emerald/30 text-brand-emerald rounded text-[11px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-emerald animate-pulse" /> LIVE IN N8N CLOUD
+            </span>
+          )}
           <span className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-purple/10 border border-brand-purple/30 text-brand-purple rounded text-[11px] font-bold font-mono">
             <GitBranch className="w-3.5 h-3.5" /> {workflow.nodeCount} nodes
           </span>
@@ -153,14 +158,25 @@ export default function WorkflowShowcasePage({ params }: { params: { slug: strin
             </li>
           ))}
         </ul>
-        <a
-          href={`${GITHUB_REPO}/blob/${TEMPLATE_BRANCH}/n8n/workflows/templates/${workflow.file}`}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-dark-hover border border-dark-border hover:border-brand-cyan text-dark-bright text-xs font-medium rounded-lg transition"
-        >
-          <ExternalLink className="w-3.5 h-3.5 text-brand-cyan" /> View Raw Workflow JSON on GitHub
-        </a>
+        {workflow.liveUrl ? (
+          <a
+            href={workflow.liveUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-emerald/10 border border-brand-emerald/30 hover:border-brand-emerald text-brand-emerald text-xs font-bold rounded-lg transition"
+          >
+            <ExternalLink className="w-3.5 h-3.5" /> Open Live Workflow in n8n Cloud
+          </a>
+        ) : workflow.file ? (
+          <a
+            href={`${GITHUB_REPO}/blob/${TEMPLATE_BRANCH}/n8n/workflows/templates/${workflow.file}`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-dark-hover border border-dark-border hover:border-brand-cyan text-dark-bright text-xs font-medium rounded-lg transition"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-brand-cyan" /> View Raw Workflow JSON on GitHub
+          </a>
+        ) : null}
       </div>
 
       <div className="bg-dark-card border border-dark-border rounded-xl p-6 space-y-3">
