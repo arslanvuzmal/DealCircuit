@@ -48,9 +48,23 @@ const rawEnv = {
 
 export const env = envSchema.parse(rawEnv);
 
+// The Vercel Marketplace Supabase integration injects connection strings under its own
+// variable names (POSTGRES_PRISMA_URL / POSTGRES_URL_NON_POOLING) rather than
+// DATABASE_URL / DIRECT_URL, which prisma/schema.prisma reads. These resolvers let both
+// the Prisma Client singleton (lib/db.ts) and production env validation fall back to the
+// integration's names at runtime, without requiring DATABASE_URL/DIRECT_URL to be
+// manually duplicated as separate Vercel env var entries.
+export function resolveDatabaseUrl(): string | undefined {
+  return process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL;
+}
+
+export function resolveDirectUrl(): string | undefined {
+  return process.env.DIRECT_URL || process.env.POSTGRES_URL_NON_POOLING;
+}
+
 export function validateProductionEnv() {
   if (process.env.NODE_ENV === 'production') {
-    if (!process.env.DATABASE_URL) {
+    if (!resolveDatabaseUrl()) {
       throw new Error('❌ [CRITICAL ENV ERROR] DATABASE_URL is required in production.');
     }
     if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 16) {
