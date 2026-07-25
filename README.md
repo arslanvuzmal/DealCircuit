@@ -21,7 +21,7 @@ LeadPilot AI is an end-to-end B2B lead capture, qualification scoring, AI safety
 ## Quick Start
 
 ### Prerequisites
-- Node.js 20.x / npm 10+
+- Node.js 24.x / npm 10+
 - PostgreSQL database (or Docker Compose)
 
 ### 1. Installation

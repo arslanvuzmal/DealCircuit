@@ -15,7 +15,10 @@ export default async function ReviewQueuePage() {
       ],
     },
     orderBy: { createdAt: 'desc' },
-    include: { scores: true },
+    include: {
+      scores: true,
+      followUps: { orderBy: { createdAt: 'desc' }, take: 1 },
+    },
   });
 
   return (

@@ -1,39 +1,43 @@
-# Vercel Environment Configuration Guide - LeadPilot AI
+# Vercel Environment Configuration Guide — LeadPilot AI
 
-This document details how to configure Vercel for production deployment.
+This document reflects the actual configuration of the live `leadpilot-ai` project (team
+`arslan-vuzmal-lone`) as of the PostgreSQL migration fix. Node version and URLs below were corrected
+after inspecting the real Vercel build logs — see `VERCEL_DEPLOYMENT_FIX.md` for why.
 
 ## 1. Vercel Project Settings
 
 1. Open the Vercel Dashboard at [https://vercel.com](https://vercel.com).
-2. Select your project **`leadpilot-ai`**.
-3. Go to **Settings** -> **General**.
-4. Set **Node.js Version** to **`20.x`**.
-5. Set **Build Command** to:
-   ```bash
-   npm run vercel-build
-   ```
-6. Set **Install Command** to:
-   ```bash
-   npm ci
-   ```
+2. Select the project **`leadpilot-ai`** under team **`arslan-vuzmal-lone`**.
+3. **Settings → General → Node.js Version**: `24.x`. (Not 20.x — Vercel's platform now rejects
+   20.x with "deployments created on or after 2026-10-01 will fail to build." Also ensure
+   `package.json`'s `engines.node` is `"24.x"`, since that field overrides the dashboard setting.)
+4. **Build Command**: leave on the default / zero-config. Vercel auto-detects and runs the
+   `vercel-build` npm script (`prisma generate && prisma migrate deploy && next build`) because a
+   script with that exact name exists in `package.json` — no manual override needed. Confirmed
+   directly in a real build log (`Running "npm run vercel-build"`).
+5. **Install Command**: `npm ci` (uses the committed lockfile; default for a project with
+   `package-lock.json`, no override needed).
 
----
+## 2. Environment Variables
 
-## 2. Environment Variables Configuration
+Configure these for **Production**, **Preview**, and **Development** (all three — the app is meant
+to run in demo mode everywhere until real AI/CRM credentials are added):
 
-In Vercel **Settings** -> **Environment Variables**, configure the following variables for **Production** and **Preview**:
-
-| Variable Name | Environment | Example / Value Description |
+| Variable | Status | Value |
 |---|---|---|
-| `DATABASE_URL` | Production, Preview | Supabase Transaction Pooler URL (`postgresql://...:6543/postgres?pgbouncer=true`) |
-| `DIRECT_URL` | Production, Preview | Supabase Direct Connection URL (`postgresql://...:5432/postgres`) |
-| `DEMO_MODE` | Production, Preview | `true` |
-| `NEXT_PUBLIC_DEMO_MODE` | Production, Preview | `true` |
-| `JWT_SECRET` | Production, Preview | Strong random secret string (min 16 chars) |
-| `INTERNAL_API_SECRET` | Production, Preview | Strong random secret string (min 16 chars) |
-| `APP_URL` | Production, Preview | `https://leadpilot-ai-avuzmal.vercel.app` |
-| `NEXT_PUBLIC_APP_URL` | Production, Preview | `https://leadpilot-ai-avuzmal.vercel.app` |
-| `DEMO_CRM_ENABLED` | Production, Preview | `true` |
-| `ALLOW_PRODUCTION_SEED` | Production, Preview | `false` (Set `true` once for initial demo seed) |
+| `DATABASE_URL` | **Still required — not yet set** | Supabase Transaction Pooler URL (port `6543`, `?pgbouncer=true`) |
+| `DIRECT_URL` | **Still required — not yet set** | Supabase Direct Connection URL (port `5432`) |
+| `JWT_SECRET` | Set (32-byte random hex, generated for this deployment) | — |
+| `INTERNAL_API_SECRET` | Set (32-byte random hex, generated for this deployment) | — |
+| `DEMO_MODE` | Set | `true` |
+| `NEXT_PUBLIC_DEMO_MODE` | Set | `true` |
+| `DEMO_CRM_ENABLED` | Set | `true` |
+| `ALLOW_PRODUCTION_SEED` | Set | `false` (flip to `true` only for a one-off manual seed run, then back to `false`) |
+| `APP_URL` | Set | `https://leadpilot-ai-arslan-vuzmal-lone.vercel.app` (Production/Preview), `http://localhost:3000` (Development) |
+| `NEXT_PUBLIC_APP_URL` | Set | same as `APP_URL` per environment |
 
-> ⚠️ **SECURITY WARNING**: Never commit actual database passwords, JWT secrets, or API keys to GitHub.
+`DATABASE_URL` and `DIRECT_URL` are the only two variables left to configure — see
+`SUPABASE_SETUP.md` for exactly where to find them once a Supabase project exists.
+
+> ⚠️ Never commit actual database passwords, JWT secrets, or API keys to GitHub. The values above
+> were set directly via the Vercel CLI/dashboard, never written to a file in this repository.
