@@ -1,4 +1,4 @@
-# LeadPilot AI (V1)
+# Titan Operation System
 
 > Enterprise-Grade Intelligent Lead Qualification, CRM Synchronisation & Follow-Up Automation Platform
 
