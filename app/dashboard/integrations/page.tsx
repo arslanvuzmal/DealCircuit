@@ -14,51 +14,53 @@ export default async function IntegrationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-dark-card border border-dark-border p-6 rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-gray-200 p-6 rounded-xl shadow-card">
         <div>
-          <h1 className="text-xl font-bold text-dark-bright tracking-tight flex items-center gap-2">
-            <Radio className="w-5 h-5 text-brand-emerald" /> Integrations & CRM Event Logs
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            <Radio className="w-5 h-5 text-green-600" /> Integrations & CRM Event Logs
           </h1>
-          <p className="text-xs text-dark-muted mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Outbound integration activity for CRM Sync, Webhooks, and Mailpit dispatch events.
           </p>
         </div>
       </div>
 
-      <div className="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 card-hover">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-dark-text">
-            <thead className="bg-dark-bg/60 text-dark-muted font-semibold uppercase border-b border-dark-border">
+          <table className="w-full text-left text-xs text-gray-900 table">
+            <thead className="table-header">
               <tr>
-                <th className="p-3">Target System</th>
-                <th className="p-3">Event Type</th>
-                <th className="p-3">Lead Contact</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Attempts</th>
-                <th className="p-3">Timestamp</th>
+                <th className="table-cell">Target System</th>
+                <th className="table-cell">Event Type</th>
+                <th className="table-cell">Lead Contact</th>
+                <th className="table-cell">Status</th>
+                <th className="table-cell">Attempts</th>
+                <th className="table-cell">Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-dark-border">
+            <tbody className="divide-y divide-gray-200">
               {events.map((evt) => (
-                <tr key={evt.id} className="hover:bg-dark-hover/50 transition">
-                  <td className="p-3 font-bold text-dark-bright">{evt.system}</td>
-                  <td className="p-3 font-mono text-brand-cyan">{evt.eventType}</td>
-                  <td className="p-3">{evt.lead?.fullName || 'System Event'}</td>
-                  <td className="p-3">
+                <tr key={evt.id} className="table-row-hover">
+                  <td className="table-cell font-bold text-gray-900">{evt.system}</td>
+                  <td className="table-cell font-mono text-blue-600">{evt.eventType}</td>
+                  <td className="table-cell">{evt.lead?.fullName || 'System Event'}</td>
+                  <td className="table-cell">
                     <span
                       className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${
                         evt.status === 'SUCCESS'
-                          ? 'bg-brand-emerald/10 text-brand-emerald border-brand-emerald/30'
+                          ? 'badge-success'
                           : evt.status === 'FAILED'
-                          ? 'bg-brand-coral/10 text-brand-coral border-brand-coral/30'
-                          : 'bg-brand-amber/10 text-brand-amber border-brand-amber/30'
+                          ? 'badge-failed'
+                          : evt.status === 'FAILED_PERMANENT'
+                          ? 'badge-failed'
+                          : 'badge-pending'
                       }`}
                     >
                       {evt.status}
                     </span>
                   </td>
-                  <td className="p-3 font-mono">{evt.attempts}/{evt.maxAttempts}</td>
-                  <td className="p-3 text-dark-muted text-[11px]">{new Date(evt.createdAt).toLocaleString()}</td>
+                  <td className="table-cell font-mono">{evt.attempts}/{evt.maxAttempts}</td>
+                  <td className="table-cell text-gray-500 text-[11px]">{new Date(evt.createdAt).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

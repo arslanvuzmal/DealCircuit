@@ -10,7 +10,8 @@
       "name": "Approval Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [100, 300]
+      "position": [100, 300],
+      "webhookId": "review-completion-webhook"
     },
     {
       "parameters": {
@@ -24,12 +25,15 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ leadId: $json.body.leadId }) }}"
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.body.leadId }) }}",
+        "options": {
+          "timeout": 30000
+        }
       },
       "name": "Sync Approved Lead to CRM",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [320, 300]
+      "position": [320, 200]
     },
     {
       "parameters": {
@@ -43,12 +47,86 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ leadId: $json.body.leadId, sendImmediately: true }) }}"
+        "jsonBody": "={{ JSON.stringify({ leadId: $json.body.leadId, sendImmediately: true }) }}",
+        "options": {
+          "timeout": 30000
+        }
       },
       "name": "Send Approved Follow-up Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [540, 300]
+      "position": [540, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "const result = $input.item.json;\nreturn {\n  json: {\n    workflowName: 'review-completion',\n    status: 'SUCCESS',\n    details: { crmSync: result.crmResult || 'synced', followUp: 'sent' }\n  }\n};"
+      },
+      "name": "Format Review Success",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [760, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/record-workflow-run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Record Review Success Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [980, 100]
+    },
+    {
+      "parameters": {
+        "functionCode": "const error = $input.item.json.error || $input.item.json.message || 'Unknown error';\nconst nodeName = $input.item.json.node || 'Unknown';\nreturn {\n  json: {\n    workflowName: 'review-completion',\n    status: 'FAILED',\n    details: { error, node: nodeName }\n  }\n};"
+      },
+      "name": "Format CRM Sync Error",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [320, 400]
+    },
+    {
+      "parameters": {
+        "functionCode": "const error = $input.item.json.error || $input.item.json.message || 'Unknown error';\nreturn {\n  json: {\n    workflowName: 'review-completion',\n    status: 'FAILED',\n    details: { error, node: 'Send Approved Follow-up Email' }\n  }\n};"
+      },
+      "name": "Format Follow-up Error",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [540, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/record-workflow-run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Record Review Failure Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [760, 400]
     }
   ],
   "connections": {
@@ -56,7 +134,27 @@
       "main": [[{ "node": "Sync Approved Lead to CRM", "type": "main", "index": 0 }]]
     },
     "Sync Approved Lead to CRM": {
-      "main": [[{ "node": "Send Approved Follow-up Email", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Send Approved Follow-up Email", "type": "main", "index": 0 }]],
+      "error": [[{ "node": "Format CRM Sync Error", "type": "main", "index": 0 }]]
+    },
+    "Send Approved Follow-up Email": {
+      "main": [[{ "node": "Format Review Success", "type": "main", "index": 0 }]],
+      "error": [[{ "node": "Format Follow-up Error", "type": "main", "index": 0 }]]
+    },
+    "Format Review Success": {
+      "main": [[{ "node": "Record Review Success Log", "type": "main", "index": 0 }]]
+    },
+    "Format CRM Sync Error": {
+      "main": [[{ "node": "Record Review Failure Log", "type": "main", "index": 0 }]]
+    },
+    "Format Follow-up Error": {
+      "main": [[{ "node": "Record Review Failure Log", "type": "main", "index": 0 }]]
+    },
+    "Record Review Success Log": {
+      "main": []
+    },
+    "Record Review Failure Log": {
+      "main": []
     }
   },
   "settings": {

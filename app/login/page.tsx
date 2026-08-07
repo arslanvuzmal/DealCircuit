@@ -38,18 +38,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg text-dark-text flex items-center justify-center p-4">
-      <div className="bg-dark-card border border-dark-border rounded-xl p-8 max-w-md w-full shadow-2xl space-y-6">
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center p-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-8 max-w-md w-full shadow-card space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-cyan to-brand-purple flex items-center justify-center font-bold text-white text-xl mx-auto shadow-lg">
+          <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white text-xl mx-auto shadow-lg">
             LP
           </div>
-          <h1 className="text-2xl font-bold text-dark-bright tracking-tight">Admin Console Login</h1>
-          <p className="text-xs text-dark-muted">Sign in to access LeadPilot AI administration and review queue</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Admin Console Login</h1>
+          <p className="text-xs text-gray-500">Sign in to access LeadPilot AI administration and review queue</p>
         </div>
 
         {error && (
-          <div className="bg-brand-coral/10 border border-brand-coral/30 rounded-lg p-3 flex items-center gap-2 text-brand-coral text-xs">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 text-red-600 text-xs">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -57,29 +57,29 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-dark-muted mb-1">Email Address</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-dark-muted absolute left-3 top-2.5" />
+              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-dark-bg border border-dark-border rounded-lg pl-9 pr-3 py-2 text-sm text-dark-bright focus:outline-none focus:border-brand-cyan"
+                className="input pl-9"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-dark-muted mb-1">Password</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-dark-muted absolute left-3 top-2.5" />
+              <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-dark-bg border border-dark-border rounded-lg pl-9 pr-3 py-2 text-sm text-dark-bright focus:outline-none focus:border-brand-cyan"
+                className="input pl-9"
               />
             </div>
           </div>
@@ -87,18 +87,18 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-gradient-to-r from-brand-cyan to-brand-purple hover:opacity-90 text-white font-medium rounded-lg text-sm transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+            className="btn-primary w-full"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4" /></>}
           </button>
         </form>
 
-        <div className="bg-dark-bg/60 border border-dark-border rounded-lg p-3 text-xs space-y-1 text-dark-muted">
-          <div className="font-semibold text-dark-bright flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-brand-emerald" /> Seeded Demo Credentials:
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs space-y-1 text-gray-500">
+          <div className="font-semibold text-gray-900 flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-green-600" /> Seeded Demo Credentials:
           </div>
-          <div>Admin: <code className="text-brand-cyan">admin@leadpilot.ai</code> / <code className="text-dark-bright">admin123</code></div>
-          <div>Reviewer: <code className="text-brand-cyan">reviewer@leadpilot.ai</code> / <code className="text-dark-bright">admin123</code></div>
+          <div>Admin: <code className="text-blue-600">admin@leadpilot.ai</code> / <code className="text-gray-900">admin123</code></div>
+          <div>Reviewer: <code className="text-blue-600">reviewer@leadpilot.ai</code> / <code className="text-gray-900">admin123</code></div>
         </div>
       </div>
     </div>

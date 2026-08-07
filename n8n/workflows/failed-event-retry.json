@@ -21,17 +21,98 @@
           "parameters": [
             { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
           ]
+        },
+        "options": {
+          "timeout": 60000
         }
       },
       "name": "Trigger Application Event Retry Handler",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const result = $input.item.json;\nreturn {\n  json: {\n    workflowName: 'failed-event-retry',\n    status: 'SUCCESS',\n    details: {\n      retriedCount: result.retriedCount || 0,\n      recoveredCount: result.recoveredCount || 0,\n      permanentFailureCount: result.permanentFailureCount || 0\n    }\n  }\n};"
+      },
+      "name": "Format Retry Success",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [540, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/record-workflow-run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Record Retry Success Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [760, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "const error = $input.item.json.error || $input.item.json.message || 'Unknown error';\nreturn {\n  json: {\n    workflowName: 'failed-event-retry',\n    status: 'FAILED',\n    details: { error, node: 'Trigger Application Event Retry Handler' }\n  }\n};"
+      },
+      "name": "Format Retry Error",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [540, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APPLICATION_URL || 'http://localhost:3000' }}/api/internal/record-workflow-run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_API_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Record Retry Failure Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [760, 400]
     }
   ],
   "connections": {
     "Schedule Trigger (Every 15m)": {
       "main": [[{ "node": "Trigger Application Event Retry Handler", "type": "main", "index": 0 }]]
+    },
+    "Trigger Application Event Retry Handler": {
+      "main": [[{ "node": "Format Retry Success", "type": "main", "index": 0 }]],
+      "error": [[{ "node": "Format Retry Error", "type": "main", "index": 0 }]]
+    },
+    "Format Retry Success": {
+      "main": [[{ "node": "Record Retry Success Log", "type": "main", "index": 0 }]]
+    },
+    "Format Retry Error": {
+      "main": [[{ "node": "Record Retry Failure Log", "type": "main", "index": 0 }]]
+    },
+    "Record Retry Success Log": {
+      "main": []
+    },
+    "Record Retry Failure Log": {
+      "main": []
     }
   },
   "settings": {

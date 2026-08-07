@@ -34,32 +34,28 @@ export default async function DashboardLayout({
   }
 
   const navItems = [
-    { href: '/dashboard', label: 'Overview Metrics', icon: LayoutDashboard },
-    { href: '/dashboard/leads', label: 'Lead Directory', icon: Users },
-    { href: '/dashboard/review', label: 'Review Queue', icon: CheckSquare },
-    { href: '/dashboard/follow-ups', label: 'Follow-up Drafts', icon: Mail },
-    { href: '/dashboard/scoring', label: 'Scoring Rules', icon: Sliders },
-    { href: '/dashboard/integrations', label: 'Integrations & CRM', icon: Radio },
-    { href: '/dashboard/workflows', label: 'n8n Workflows', icon: Workflow },
-    { href: '/dashboard/audit', label: 'Audit Logs', icon: History },
-    { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
-    { href: '/dashboard/health', label: 'System Health', icon: Activity },
+    { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { href: '/dashboard/leads', label: 'Leads', icon: Users },
+    { href: '/dashboard/review', label: 'Review', icon: CheckSquare },
+    { href: '/dashboard/follow-ups', label: 'Follow-ups', icon: Mail },
+    { href: '/dashboard/workflows', label: 'Workflows', icon: Workflow },
+    { href: '/dashboard/integrations', label: 'Integrations', icon: Radio },
+    { href: '/dashboard/audit', label: 'Audit', icon: History },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-    { href: '/dashboard/demo', label: 'Demo Controls', icon: SlidersHorizontal },
   ];
 
   return (
-    <div className="min-h-screen bg-dark-bg text-dark-text flex">
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-dark-card border-r border-dark-border flex flex-col justify-between hidden md:flex flex-shrink-0">
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col justify-between hidden md:flex flex-shrink-0">
         <div className="p-5 space-y-6">
-          <div className="flex items-center gap-3 border-b border-dark-border pb-4">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-brand-cyan to-brand-purple flex items-center justify-center font-bold text-white text-base shadow-md">
+          <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
+            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-base shadow-md">
               LP
             </div>
             <div>
-              <h2 className="text-sm font-bold text-dark-bright tracking-tight">LeadPilot AI</h2>
-              <span className="text-[10px] text-brand-cyan font-mono flex items-center gap-1">
+              <h2 className="text-sm font-bold text-gray-900 tracking-tight">LeadPilot AI</h2>
+              <span className="text-[10px] text-blue-600 font-mono flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3" /> DEMO_MODE
               </span>
             </div>
@@ -72,9 +68,9 @@ export default async function DashboardLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-medium text-dark-muted hover:text-dark-bright hover:bg-dark-hover transition"
+                  className="flex items-center gap-3 px-3.5 py-2 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition"
                 >
-                  <Icon className="w-4 h-4 text-brand-cyan" />
+                  <Icon className="w-4 h-4 text-blue-600" />
                   <span>{item.label}</span>
                 </Link>
               );
@@ -82,11 +78,11 @@ export default async function DashboardLayout({
           </nav>
         </div>
 
-        <div className="p-4 border-t border-dark-border space-y-3">
-          <div className="flex items-center justify-between text-xs bg-dark-bg/60 p-2.5 rounded-lg border border-dark-border">
+        <div className="p-4 border-t border-gray-200 space-y-3">
+          <div className="flex items-center justify-between text-xs bg-gray-50 p-2.5 rounded-lg border border-gray-200">
             <div>
-              <div className="font-semibold text-dark-bright truncate">{user.name}</div>
-              <div className="text-[10px] text-dark-muted font-mono">{user.role}</div>
+              <div className="font-semibold text-gray-900 truncate">{user.name}</div>
+              <div className="text-[10px] text-gray-500 font-mono">{user.role}</div>
             </div>
             <LogoutButton />
           </div>
@@ -96,10 +92,10 @@ export default async function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header */}
-        <header className="h-16 bg-dark-card border-b border-dark-border px-6 flex items-center justify-between flex-shrink-0">
+        <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-4">
-            <div className="text-xs font-semibold text-dark-bright flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-brand-purple" /> Lead Qualification & CRM Automation Platform
+            <div className="text-xs font-semibold text-gray-900 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-600" /> LeadPilot AI - Operations Console
             </div>
           </div>
 
@@ -107,7 +103,7 @@ export default async function DashboardLayout({
             <Link
               href="/submit"
               target="_blank"
-              className="text-brand-cyan hover:underline font-medium flex items-center gap-1"
+              className="text-blue-600 hover:underline font-medium flex items-center gap-1"
             >
               Public Form ↗
             </Link>
@@ -115,13 +111,13 @@ export default async function DashboardLayout({
               href="http://localhost:8025"
               target="_blank"
               rel="noreferrer"
-              className="px-2.5 py-1 bg-dark-hover border border-dark-border rounded-md text-dark-bright font-mono hover:border-brand-cyan transition"
+              className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-md text-gray-700 font-mono transition"
             >
               Mailpit UI (8025)
             </a>
             <Link
               href="/dashboard/notifications"
-              className="w-8 h-8 rounded-full bg-dark-hover border border-dark-border flex items-center justify-center text-dark-muted hover:text-dark-bright transition"
+              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 transition"
             >
               <Bell className="w-4 h-4" />
             </Link>

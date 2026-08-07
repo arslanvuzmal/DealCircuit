@@ -10,11 +10,23 @@ import { syncLeadToCRM } from '@/lib/crm/adapter';
 import { createInAppNotification, logAuditEvent } from '@/lib/observability/logger';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
+import { checkRateLimit, createRateLimitHeaders, createRateLimitErrorResponse } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
     const rawBody = await request.json();
     const idempotencyKey = request.headers.get('x-idempotency-key') || rawBody.idempotencyKey || null;
+
+    // Rate limiting - check before any processing
+    const { ipResult, emailResult } = await checkRateLimit(request, rawBody.workEmail);
+    
+    if (!ipResult.allowed) {
+      return createRateLimitErrorResponse(ipResult, 'ip');
+    }
+    
+    if (emailResult && !emailResult.allowed) {
+      return createRateLimitErrorResponse(emailResult, 'email');
+    }
 
     // 1. Honeypot check
     if (rawBody.websiteHoneypot) {
@@ -223,13 +235,18 @@ export async function POST(request: Request) {
       newValue: { category: finalCategory, score: finalScore },
     });
 
+    const rateLimitHeaders = createRateLimitHeaders(ipResult);
+
     return NextResponse.json({
       success: true,
       leadId: lead.id,
       category: finalCategory,
       score: finalScore,
       message: 'Lead submitted and qualified successfully.',
-    }, { status: 201 });
+    }, { 
+      status: 201,
+      headers: rateLimitHeaders,
+    });
 
   } catch (error) {
     console.error('Error submitting lead:', error);

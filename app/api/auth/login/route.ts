@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { comparePassword, signToken } from '@/lib/auth';
+import { env } from '@/lib/env';
+import { generateCSRFToken, setCSRFTokenCookie } from '@/lib/csrf';
 
 export async function POST(request: Request) {
   try {
@@ -36,13 +38,17 @@ export async function POST(request: Request) {
       },
     });
 
+    const isProduction = env.NODE_ENV === 'production';
     response.cookies.set('token', token, {
       httpOnly: true,
-      secure: false,
+      secure: isProduction,
       sameSite: 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60, // 7 days
     });
+
+    const csrfToken = await generateCSRFToken(user.id);
+    setCSRFTokenCookie(response, csrfToken);
 
     return response;
   } catch (error) {

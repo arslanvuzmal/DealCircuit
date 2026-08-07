@@ -1,6 +1,5 @@
-import ScoringRulesPage from '../scoring-rules/page';
+import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-export default ScoringRulesPage;
+export default function ScoringRedirect() {
+  redirect('/dashboard/scoring-rules');
+}

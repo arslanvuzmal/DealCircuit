@@ -1,6 +1,5 @@
-import DemoControlsPage from '../demo-controls/page';
+import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-export default DemoControlsPage;
+export default function DemoRedirect() {
+  redirect('/dashboard/demo-controls');
+}

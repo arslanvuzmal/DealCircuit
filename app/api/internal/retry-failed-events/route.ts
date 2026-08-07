@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/db';
-import { syncLeadToCRM } from '@/lib/crm/adapter';
+import { retryCRMSync } from '@/lib/crm/adapter';
 import { createInAppNotification } from '@/lib/observability/logger';
+import { ErrorClassification } from '@/lib/error-classification';
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
 
     const failedEvents = await prisma.integrationEvent.findMany({
       where: {
-        status: { in: ['FAILED', 'RETRYING'] },
+        status: { in: ['FAILED', 'RETRYING', 'FAILED_PERMANENT'] },
         attempts: { lt: 3 },
       },
       include: { lead: true },
@@ -21,13 +22,17 @@ export async function POST(request: Request) {
 
     let retriedCount = 0;
     let recoveredCount = 0;
+    let permanentFailureCount = 0;
 
     for (const event of failedEvents) {
+      if (event.status === 'FAILED_PERMANENT') {
+        continue;
+      }
+
       retriedCount++;
       const currentAttempts = event.attempts + 1;
 
-      // Retry CRM sync for demo
-      const result = await syncLeadToCRM(
+      const result = await retryCRMSync(
         {
           leadId: event.leadId,
           fullName: event.lead.fullName,
@@ -37,7 +42,7 @@ export async function POST(request: Request) {
           category: event.lead.category || 'HOT',
           totalScore: event.lead.totalScore || 80,
         },
-        false // Do not force failure during retry execution
+        currentAttempts
       );
 
       if (result.success) {
@@ -51,7 +56,10 @@ export async function POST(request: Request) {
           },
         });
       } else {
-        const nextStatus = currentAttempts >= event.maxAttempts ? 'FAILED' : 'RETRYING';
+        const isPermanent = result.classification === ErrorClassification.PERMANENT;
+        const isFinalAttempt = currentAttempts >= event.maxAttempts;
+        const nextStatus = isPermanent || isFinalAttempt ? 'FAILED_PERMANENT' : 'RETRYING';
+
         await prisma.integrationEvent.update({
           where: { id: event.id },
           data: {
@@ -61,10 +69,11 @@ export async function POST(request: Request) {
           },
         });
 
-        if (nextStatus === 'FAILED') {
+        if (nextStatus === 'FAILED_PERMANENT') {
+          permanentFailureCount++;
           await createInAppNotification({
-            title: '❌ Integration Retry Exhausted',
-            message: `Event ${event.id} for lead ${event.lead.fullName} failed after ${currentAttempts} attempts.`,
+            title: '❌ Integration Permanently Failed',
+            message: `Event ${event.id} for lead ${event.lead.fullName} failed permanently after ${currentAttempts} attempts. Reason: ${result.error}`,
             type: 'SYNC_ERROR',
           });
         }
@@ -75,6 +84,7 @@ export async function POST(request: Request) {
       success: true,
       retriedCount,
       recoveredCount,
+      permanentFailureCount,
     });
   } catch (error) {
     console.error('Error retrying events:', error);

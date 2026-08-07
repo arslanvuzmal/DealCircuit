@@ -14,85 +14,87 @@ export default async function LeadsDirectoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-dark-card border border-dark-border p-6 rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-gray-200 p-6 rounded-xl shadow-card">
         <div>
-          <h1 className="text-xl font-bold text-dark-bright tracking-tight flex items-center gap-2">
-            <Users className="w-5 h-5 text-brand-cyan" /> Lead Directory & Management
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-600" /> Lead Directory & Management
           </h1>
-          <p className="text-xs text-dark-muted mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Complete database directory of ingested, qualified, and synchronized leads.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-3 py-1.5 bg-dark-bg border border-dark-border rounded-lg text-xs font-mono text-dark-bright flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-brand-purple" /> {leads.length} Records
+          <div className="px-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-xs font-mono text-gray-900 flex items-center gap-2">
+            <Filter className="w-3.5 h-3.5 text-purple-600" /> {leads.length} Records
           </div>
         </div>
       </div>
 
-      <div className="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 card-hover">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-dark-text">
-            <thead className="bg-dark-bg/60 text-dark-muted font-semibold uppercase border-b border-dark-border">
+          <table className="w-full text-left text-xs text-gray-900 table">
+            <thead className="table-header">
               <tr>
-                <th className="p-3">Contact Details</th>
-                <th className="p-3">Company & Industry</th>
-                <th className="p-3">Category</th>
-                <th className="p-3">Score</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">CRM Sync</th>
-                <th className="p-3 text-right">Action</th>
+                <th className="table-cell">Contact Details</th>
+                <th className="table-cell">Company & Industry</th>
+                <th className="table-cell">Category</th>
+                <th className="table-cell">Score</th>
+                <th className="table-cell">Status</th>
+                <th className="table-cell">CRM Sync</th>
+                <th className="table-cell text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-dark-border">
+            <tbody className="divide-y divide-gray-200">
               {leads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-dark-hover/50 transition">
-                  <td className="p-3">
-                    <div className="font-semibold text-dark-bright">{lead.fullName}</div>
-                    <div className="text-[11px] text-dark-muted">{lead.workEmail}</div>
+                <tr key={lead.id} className="table-row-hover">
+                  <td className="table-cell">
+                    <div className="font-semibold text-gray-900">{lead.fullName}</div>
+                    <div className="text-[11px] text-gray-500">{lead.workEmail}</div>
                   </td>
-                  <td className="p-3">
-                    <div className="font-semibold text-dark-bright">{lead.companyName}</div>
-                    <div className="text-[11px] text-dark-muted">{lead.industry}</div>
+                  <td className="table-cell">
+                    <div className="font-semibold text-gray-900">{lead.companyName}</div>
+                    <div className="text-[11px] text-gray-500">{lead.industry}</div>
                   </td>
-                  <td className="p-3">
+                  <td className="table-cell">
                     <span
                       className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${
                         lead.category === 'HOT'
-                          ? 'bg-brand-emerald/10 text-brand-emerald border-brand-emerald/30'
+                          ? 'badge-hot'
                           : lead.category === 'WARM'
-                          ? 'bg-brand-amber/10 text-brand-amber border-brand-amber/30'
+                          ? 'badge-warm'
                           : lead.category === 'COLD'
-                          ? 'bg-dark-bg text-dark-muted border-dark-border'
-                          : 'bg-brand-coral/10 text-brand-coral border-brand-coral/30'
+                          ? 'badge-cold'
+                          : 'badge-review'
                       }`}
                     >
                       {lead.category || 'PENDING'}
                     </span>
                   </td>
-                  <td className="p-3 font-mono font-bold text-dark-bright">
+                  <td className="table-cell font-mono font-bold text-gray-900">
                     {lead.totalScore !== null ? `${lead.totalScore}/100` : '-'}
                   </td>
-                  <td className="p-3">
-                    <span className="text-dark-muted font-mono">{lead.status}</span>
+                  <td className="table-cell">
+                    <span className="text-gray-500 font-mono">{lead.status}</span>
                   </td>
-                  <td className="p-3">
+                  <td className="table-cell">
                     <span
                       className={`text-[11px] font-medium ${
                         lead.crmSyncStatus === 'SYNCED'
-                          ? 'text-brand-emerald'
+                          ? 'text-green-600'
                           : lead.crmSyncStatus === 'FAILED'
-                          ? 'text-brand-coral font-bold'
-                          : 'text-dark-muted'
+                          ? 'text-red-600 font-bold'
+                          : lead.crmSyncStatus === 'FAILED_PERMANENT'
+                          ? 'text-red-600 font-bold'
+                          : 'text-gray-500'
                       }`}
                     >
                       {lead.crmSyncStatus}
                     </span>
                   </td>
-                  <td className="p-3 text-right">
+                  <td className="table-cell text-right">
                     <Link
                       href={`/dashboard/leads/${lead.id}`}
-                      className="px-2.5 py-1 bg-dark-hover border border-dark-border hover:border-brand-cyan text-dark-bright text-[11px] rounded transition"
+                      className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 hover:border-blue-600 text-gray-700 text-[11px] rounded transition"
                     >
                       Inspect
                     </Link>

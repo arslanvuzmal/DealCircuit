@@ -2,8 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'LeadPilot AI - Intelligent Lead Qualification & Automation Platform',
-  description: 'Automated lead capture, 5-criteria qualification scoring, AI safety defense, and CRM integration platform.',
+  title: 'LeadPilot AI - AI Lead Operations & n8n Automation',
+  description: 'Automated lead capture, 5-criteria qualification scoring, AI safety defense, and n8n workflow automation platform.',
 };
 
 export default function RootLayout({
@@ -12,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-dark-bg text-dark-text antialiased min-h-screen">
+    <html lang="en">
+      <body className="bg-gray-50 text-gray-900 antialiased min-h-screen">
         {children}
       </body>
     </html>

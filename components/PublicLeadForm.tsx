@@ -92,7 +92,7 @@ export default function PublicLeadForm() {
           </div>
           <div>
             <span className="text-xs text-dark-muted block">Response Time</span>
-            <span className="text-dark-bright font-medium">Within 2 Hours</span>
+            <span className="text-dark-bright font-medium">Based on qualification</span>
           </div>
         </div>
 

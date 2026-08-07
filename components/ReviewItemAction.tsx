@@ -70,22 +70,22 @@ export default function ReviewItemAction({ lead }: { lead: any }) {
   };
 
   return (
-    <div className="bg-dark-bg/60 p-4 rounded-xl border border-dark-border space-y-4 text-xs">
-      <h3 className="font-bold text-dark-bright">Human Reviewer Action Panel</h3>
+    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-4 text-xs">
+      <h3 className="font-bold text-gray-900">Human Reviewer Action Panel</h3>
 
       {message && (
-        <div className="bg-brand-cyan/10 border border-brand-cyan/30 rounded-lg p-2.5 text-brand-cyan">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 text-blue-600">
           {message}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-dark-muted mb-1 font-medium">Adjust Category</label>
+          <label className="block text-gray-500 mb-1 font-medium">Adjust Category</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full bg-dark-bg border border-dark-border rounded-lg px-2.5 py-1.5 text-dark-bright focus:outline-none focus:border-brand-cyan"
+            className="w-full input"
           >
             <option value="HOT">HOT (Immediate Sales Call)</option>
             <option value="WARM">WARM (Nurture / Follow-up)</option>
@@ -95,36 +95,36 @@ export default function ReviewItemAction({ lead }: { lead: any }) {
         </div>
 
         <div>
-          <label className="block text-dark-muted mb-1 font-medium">Adjust Score (0-100)</label>
+          <label className="block text-gray-500 mb-1 font-medium">Adjust Score (0-100)</label>
           <input
             type="number"
             min={0}
             max={100}
             value={score}
             onChange={(e) => setScore(Number(e.target.value))}
-            className="w-full bg-dark-bg border border-dark-border rounded-lg px-2.5 py-1.5 text-dark-bright focus:outline-none focus:border-brand-cyan"
+            className="w-full input"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-dark-muted mb-1 font-medium">Reviewer Internal Notes</label>
+        <label className="block text-gray-500 mb-1 font-medium">Reviewer Internal Notes</label>
         <input
           type="text"
           placeholder="Reason for score adjustment or manual approval decision..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full bg-dark-bg border border-dark-border rounded-lg px-2.5 py-1.5 text-dark-bright focus:outline-none focus:border-brand-cyan"
+          className="w-full input"
         />
       </div>
 
       <div>
-        <label className="block text-dark-muted mb-1 font-medium">Edit Follow-up Draft</label>
+        <label className="block text-gray-500 mb-1 font-medium">Edit Follow-up Draft</label>
         <textarea
           rows={3}
           value={followUpBody}
           onChange={(e) => setFollowUpBody(e.target.value)}
-          className="w-full bg-dark-bg border border-dark-border rounded-lg px-2.5 py-1.5 text-dark-bright focus:outline-none focus:border-brand-cyan"
+          className="w-full input min-h-[80px]"
         />
       </div>
 
@@ -132,7 +132,7 @@ export default function ReviewItemAction({ lead }: { lead: any }) {
         <button
           onClick={handleApprove}
           disabled={loading}
-          className="px-4 py-2 bg-brand-emerald hover:opacity-90 text-white font-medium rounded-lg text-xs transition flex items-center gap-1.5 shadow"
+          className="btn-success"
         >
           {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />} Approve & Dispatch Sync
         </button>
@@ -140,7 +140,7 @@ export default function ReviewItemAction({ lead }: { lead: any }) {
         <button
           onClick={handleReject}
           disabled={loading}
-          className="px-4 py-2 bg-brand-coral hover:opacity-90 text-white font-medium rounded-lg text-xs transition flex items-center gap-1.5 shadow"
+          className="btn-danger"
         >
           <XCircle className="w-3.5 h-3.5" /> Reject Lead
         </button>
@@ -148,9 +148,9 @@ export default function ReviewItemAction({ lead }: { lead: any }) {
         <button
           onClick={handleReprocess}
           disabled={loading}
-          className="px-4 py-2 bg-dark-hover border border-dark-border hover:border-brand-cyan text-dark-bright font-medium rounded-lg text-xs transition flex items-center gap-1.5"
+          className="btn-secondary"
         >
-          <RefreshCw className="w-3.5 h-3.5 text-brand-cyan" /> Re-qualify AI Engine
+          <RefreshCw className="w-3.5 h-3.5 text-blue-600" /> Re-qualify AI Engine
         </button>
       </div>
     </div>

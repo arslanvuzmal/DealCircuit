@@ -1,6 +1,6 @@
-# Titan Operation System
+# LeadPilot AI
 
-> Enterprise-Grade Intelligent Lead Qualification, CRM Synchronisation & Follow-Up Automation Platform
+> AI Lead Operations & n8n Automation
 
 LeadPilot AI is an end-to-end B2B lead capture, qualification scoring, AI safety defense, and workflow automation system built with Next.js 14, TypeScript, Tailwind CSS, Prisma ORM, PostgreSQL, and n8n.
 
@@ -63,7 +63,7 @@ Access the application at `http://localhost:3000`.
 leadpilot-ai/
 ├── app/                  # Next.js 14 App Router (Pages & APIs)
 │   ├── api/              # Public, Authenticated, and Internal n8n APIs
-│   ├── dashboard/        # Administration Console (Tokyo Night Dark Theme)
+│   ├── dashboard/        # Administration Console (Professional Light Theme)
 │   ├── submit/           # Public Lead Capture Form Page
 │   └── login/            # Admin Authentication Page
 ├── components/           # Reusable UI & Action Components
@@ -94,4 +94,5 @@ npm run verify
 ---
 
 ## License
+
 MIT License.
