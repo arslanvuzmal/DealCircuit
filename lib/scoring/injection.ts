@@ -15,6 +15,9 @@ const INJECTION_PATTERNS = [
   /\[system\s*message\]/i,
   /<system_message>/i,
   /print\s+environment\s+variables/i,
+  /export\s+(all|every|the)\s+(lead|data|database)/i,
+  /send\s+(them|it|data)\s+to\s+[\w@.-]+/i,
+  /exfiltrat(e|ion)/i,
 ];
 
 export function detectPromptInjection(projectDescription: string, otherFields?: Record<string, string>): InjectionCheckResult {

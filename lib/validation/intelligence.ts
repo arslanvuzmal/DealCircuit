@@ -85,13 +85,17 @@ export const followupDraftSchema = z.object({
 });
 
 export const auditEventSchema = z.object({
+  id: z.string().optional(),
+  runId: z.string().optional(),
+  traceId: z.string().optional(),
   timestamp: z.string(),
   event: z.string(),
   status: z.enum(['pending', 'completed', 'failed']),
-  traceId: z.string().optional(),
   actionId: z.string().optional(),
   executionType: z.string().optional(),
   retryCount: z.number().optional(),
+  durationMs: z.number().optional(),
+  metadata: z.record(z.unknown()).optional(),
 });
 
 export const businessImpactSchema = z.object({
@@ -114,6 +118,9 @@ export const scenarioTypeSchema = z.enum([
 ]);
 
 export const leadIntelligenceResultSchema = z.object({
+  runId: z.string(),
+  traceId: z.string(),
+  mode: z.enum(['DEMO', 'SANDBOX', 'LIVE']),
   lead: z.object({
     fullName: z.string(),
     workEmail: z.string(),
@@ -186,7 +193,15 @@ export const leadIntelligenceResultSchema = z.object({
   auditEvents: z.array(auditEventSchema),
   businessImpact: businessImpactSchema,
   scenario: scenarioTypeSchema,
-  simulationMode: z.boolean(),
+  simulation: z.object({
+    externalActionsExecuted: z.boolean(),
+    message: z.string(),
+  }),
+  security: z.object({
+    promptInjectionDetected: z.boolean(),
+    sanitizedFields: z.array(z.string()),
+    suspiciousPhrases: z.array(z.string()),
+  }).optional(),
 });
 
 export type LeadIntelligenceResult = z.infer<typeof leadIntelligenceResultSchema>;
@@ -204,3 +219,4 @@ export type CRMPreview = z.infer<typeof crmPreviewSchema>;
 export type FollowupDraft = z.infer<typeof followupDraftSchema>;
 export type AuditEvent = z.infer<typeof auditEventSchema>;
 export type BusinessImpact = z.infer<typeof businessImpactSchema>;
+export type SecurityAnalysis = z.infer<typeof leadIntelligenceResultSchema.shape.security>;

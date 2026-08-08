@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Zap, ArrowRight, ShieldCheck, Sparkles, Loader2, X, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Zap, ArrowRight, ShieldCheck, Sparkles, Loader2, X, CheckCircle2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { SCENARIOS, getAllScenarios, ScenarioKey } from '@/lib/scenarios';
 import ValidationPanel from '@/components/intelligence/ValidationPanel';
@@ -23,11 +23,45 @@ import AuditTimelinePanel from '@/components/intelligence/AuditTimelinePanel';
 import BusinessImpactPanel from '@/components/intelligence/BusinessImpactPanel';
 import WhatIfComparisonPanel from '@/components/intelligence/WhatIfComparisonPanel';
 
-function IntelligenceLabPage() {
+interface LeadIntelligenceResult {
+  runId: string;
+  traceId: string;
+  mode: string;
+  lead: any;
+  validation: any;
+  duplicateCheck: any;
+  companyIntelligence: any;
+  contactIntelligence: any;
+  businessDiagnosis: any;
+  buyingSignals: any[];
+  objections: any[];
+  qualification: any;
+  confidence: any;
+  missingInformation: any[];
+  recommendedQuestions: any[];
+  dealStrategy: any;
+  crmPreview: any;
+  followupDraft: any;
+  auditEvents: any[];
+  businessImpact: any;
+  scenario: string;
+  simulation: {
+    externalActionsExecuted: boolean;
+    message: string;
+  };
+  security?: {
+    promptInjectionDetected: boolean;
+    sanitizedFields: string[];
+    suspiciousPhrases: string[];
+  };
+}
+
+export default function IntelligenceLabPage() {
   const [selectedScenario, setSelectedScenario] = useState<keyof typeof SCENARIOS>('complex_b2b');
   const [currentStep, setCurrentStep] = useState(1);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<LeadIntelligenceResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customLeadData, setCustomLeadData] = useState({
     fullName: '',
@@ -53,13 +87,14 @@ function IntelligenceLabPage() {
     setLoading(true);
     setCurrentStep(1);
     setResult(null);
+    setError(null);
 
     const leadData = showCustomForm ? customLeadData : SCENARIOS[selectedScenario].leadData;
 
     const steps = [
       'Validating & normalizing input...',
       'Checking for duplicates...',
-      'Running AI qualification...',
+      'Running intelligence analysis...',
       'Diagnosing business problems...',
       'Extracting buying signals...',
       'Analyzing risks & objections...',
@@ -71,18 +106,39 @@ function IntelligenceLabPage() {
 
     for (let i = 0; i < steps.length; i++) {
       setCurrentStep(i + 1);
-      await new Promise(r => setTimeout(r, 300 + Math.random() * 300));
+      await new Promise(r => setTimeout(r, 200 + Math.random() * 200));
     }
 
-    const scenarioResult = generateScenarioResult(selectedScenario, leadData);
-    setResult(scenarioResult);
-    setLoading(false);
+    try {
+      const response = await fetch('/api/intelligence', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...leadData,
+          scenario: showCustomForm ? 'custom' : selectedScenario,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Analysis failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setResult(data.intelligence);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-const handleApprove = async (updates: { stage: string; score: number; reason: string }) => {
+  const handleApprove = async (updates: { stage: string; score: number; reason: string }) => {
     await new Promise(r => setTimeout(r, 500));
     if (result) {
-      setResult((prev: any) => ({
+      setResult(prev => prev ? {
         ...prev,
         qualification: {
           ...prev.qualification,
@@ -92,20 +148,23 @@ const handleApprove = async (updates: { stage: string; score: number; reason: st
         auditEvents: [
           ...prev.auditEvents,
           {
+            id: `evt_${Date.now()}`,
+            runId: prev.runId,
+            traceId: prev.traceId,
             timestamp: new Date().toISOString(),
             event: 'Human approval',
             status: 'completed',
-            traceId: 'trace_' + Date.now(),
+            executionType: 'demo',
           }
         ]
-      }));
+      } : null);
     }
   };
 
-const handleReject = async (reason: string) => {
+  const handleReject = async (reason: string) => {
     await new Promise(r => setTimeout(r, 300));
     if (result) {
-      setResult((prev: any) => ({
+      setResult(prev => prev ? {
         ...prev,
         qualification: {
           ...prev.qualification,
@@ -114,453 +173,23 @@ const handleReject = async (reason: string) => {
         auditEvents: [
           ...prev.auditEvents,
           {
+            id: `evt_${Date.now()}`,
+            runId: prev.runId,
+            traceId: prev.traceId,
             timestamp: new Date().toISOString(),
             event: 'Lead rejected by reviewer',
             status: 'completed',
-            traceId: 'trace_' + Date.now(),
+            executionType: 'demo',
           }
         ]
-      }));
+      } : null);
     }
   };
 
   const handleReprocess = async () => {
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    if (result) {
-      const newResult = generateScenarioResult(selectedScenario, showCustomForm ? customLeadData : SCENARIOS[selectedScenario].leadData);
-      setResult(newResult);
-    }
+    await handleAnalyze();
     setLoading(false);
-  };
-
-  const generateScenarioResult = (scenario: string, leadData: any) => {
-    const baseResult = {
-      lead: leadData,
-      validation: {
-        email: 'Valid',
-        company: 'VertexCare Clinics',
-        duplicateCheck: 'No exact duplicate',
-        requiredFields: '4 / 5 available',
-        missing: 'Direct phone number',
-      },
-duplicateCheck: {
-        isDuplicate: false,
-        matchType: undefined as string | undefined,
-        existingLead: undefined as { name: string; company: string; lastInteraction: string } | undefined,
-      },
-      companyIntelligence: {
-        industry: 'Healthcare Services',
-        companySize: '51-200',
-        locations: 6,
-        operationalComplexity: 'High - multi-location, multi-channel, regulated',
-        existingSystems: ['HubSpot', 'Google Calendar', 'WhatsApp'],
-        leadSource: 'Website Form',
-        enriched: true,
-      },
-      contactIntelligence: {
-        role: 'Operations Director',
-        seniority: 'C-Level / VP',
-        influenceLevel: 'High',
-        department: 'Operations',
-        decisionMakingCertainty: 'High - C-Level / Founder / Owner',
-        inferred: ['Department inferred from role', 'Decision certainty inferred from title'],
-      },
-      businessDiagnosis: {
-        primaryProblem: {
-          name: 'After-hours enquiry leakage',
-          severity: 'High',
-          evidence: [
-            '~1,800 monthly enquiries across phone, web, WhatsApp',
-            'Front desk manually routes all enquiries',
-            'No after-hours coverage mentioned'
-          ],
-          consequence: 'Significant revenue loss from missed after-hours enquiries; front desk overwhelmed during peak hours',
-        },
-        secondaryProblems: [
-          {
-            name: 'Fragmented enquiry routing',
-            severity: 'Medium',
-            evidence: ['Phone, web forms, WhatsApp all handled separately'],
-            consequence: 'Inconsistent qualification, duplicate data entry, missed follow-ups',
-          },
-          {
-            name: 'Manual data entry burden',
-            severity: 'Medium',
-            evidence: ['Manual CRM entry', 'Manual calendar scheduling'],
-            consequence: 'Staff time wasted on repetitive tasks; data entry errors',
-          },
-        ],
-        rootCauseSummary: 'The primary constraint is not lead generation - VertexCare already has significant enquiry volume. The operational bottleneck is the manual qualification > routing > scheduling chain that cannot scale across 6 locations and 3 channels.',
-        workflow: [
-          'Enquiry Capture (Phone/Web/WhatsApp)',
-          'Manual Front Desk Review',
-          'Manual Qualification',
-          'Manual Routing to Clinic',
-          'Manual HubSpot Entry',
-          'Manual Calendar Scheduling',
-        ],
-        operationalConsequences: [
-          'Delayed response times (especially after-hours)',
-          'Inconsistent qualification criteria',
-          'Duplicate data entry across HubSpot/Calendar',
-          'Staff burnout from repetitive manual tasks',
-          'Revenue leakage from missed after-hours enquiries',
-        ],
-      },
-      buyingSignals: [
-        {
-          signal: 'We currently receive around 1,800 patient enquiries every month...',
-          strength: 'Strong',
-          evidence: 'Explicit volume disclosure indicates meaningful operational scale',
-          interpretation: 'Meaningful operational volume exists - not a tire-kicker',
-        },
-        {
-          signal: "We're losing enquiries after hours",
-          strength: 'Strong',
-          evidence: 'Direct admission of active operational/revenue problem',
-          interpretation: 'The prospect has identified an active operational/revenue problem',
-        },
-        {
-          signal: 'We use HubSpot and Google Calendar',
-          strength: 'Strong',
-          evidence: 'Specific systems named - integration environment is known',
-          interpretation: 'Existing integration environment is identifiable and compatible',
-        },
-        {
-          signal: 'We would probably need to start with one clinic first',
-          strength: 'Strong',
-          evidence: 'Prospect is thinking about deployment strategy, not just researching',
-          interpretation: 'Prospect is in solution-evaluation territory, not just researching',
-        },
-        {
-          signal: 'Can you show us what implementation might look like?',
-          strength: 'Medium',
-          evidence: 'Explicit request for implementation vision',
-          interpretation: 'Prospect is entering solution-evaluation territory',
-        },
-      ],
-      objections: [
-        {
-          name: 'Patient Data / Privacy',
-          severity: 'High',
-          evidence: 'Explicitly mentioned "concerns around patient data"',
-          whyItMatters: 'Healthcare data requires HIPAA compliance; failure = legal/regulatory risk',
-          recommendedNextStep: 'Provide HIPAA compliance documentation and BA agreement early in discovery',
-        },
-        {
-          name: 'Integration Complexity',
-          severity: 'Medium',
-          evidence: 'HubSpot + Calendar + WhatsApp across 6 locations',
-          whyItMatters: 'Multi-system, multi-location integration increases implementation risk',
-          recommendedNextStep: 'Map current data flows in discovery; propose phased integration approach',
-        },
-        {
-          name: 'Multi-location Rollout Complexity',
-          severity: 'Medium',
-          evidence: '6 clinics, 3 channels, phased rollout desired',
-          whyItMatters: 'Phased rollout requires change management across locations',
-          recommendedNextStep: 'Define pilot clinic criteria and success metrics in discovery',
-        },
-        {
-          name: 'Budget Unknown',
-          severity: 'Unknown',
-          evidence: 'No budget range disclosed',
-          whyItMatters: 'Cannot confirm commercial viability without budget confirmation',
-          recommendedNextStep: 'Ask directly in discovery: "What budget range has been allocated for this initiative?"',
-        },
-      ],
-      qualification: {
-        overallScore: 87,
-        stage: 'Sales Qualified',
-        priority: 'High',
-        dimensions: [
-          { name: 'Problem Severity', score: 19, maxScore: 20, evidence: ['Significant enquiry volume (1,800/month)', 'After-hours leakage confirmed', 'Manual handling at scale', '6 locations affected'], missing: [] },
-          { name: 'Commercial Intent', score: 18, maxScore: 20, evidence: ['Actively evaluating automation', 'Asked about implementation', 'Discussed pilot structure'], missing: ['Budget not disclosed'] },
-          { name: 'Authority', score: 14, maxScore: 20, evidence: ['Operations Director title', 'Likely operational influence'], missing: ['Final procurement authority unclear'] },
-          { name: 'Solution Fit', score: 19, maxScore: 20, evidence: ['Repetitive workflow automation', 'HubSpot + Calendar compatible', 'Multi-channel enquiry flow'], missing: ['WhatsApp integration scope unclear'] },
-          { name: 'Urgency', score: 17, maxScore: 20, evidence: ['Current leakage = active pain', 'Implementation conversation initiated'], missing: ['Explicit target implementation date'] },
-        ],
-      },
-      confidence: {
-        score: 92,
-        supportingFactors: [
-          'Several explicit facts provided by prospect',
-          'Concrete systems named (HubSpot, Google Calendar, WhatsApp)',
-          'Operational volume disclosed with specificity',
-          'Business problem directly stated by prospect',
-          'Implementation conversation already initiated by prospect',
-        ],
-        uncertaintyFactors: [
-          'Budget not disclosed',
-          'Final procurement authority not confirmed',
-          'Implementation timeline not specified',
-          'Exact compliance requirements (HIPAA scope) not detailed',
-          'WhatsApp integration scope not defined',
-        ],
-      },
-      missingInformation: [
-        { field: 'Budget', reason: 'No implementation budget supplied', impact: 'Cannot confirm commercial viability or size opportunity' },
-        { field: 'Authority', reason: 'Operations Director identified, but final procurement authority unknown', impact: 'Decision-making process unclear; may need additional stakeholders' },
-        { field: 'Timeline', reason: 'Problem is active but implementation date unknown', impact: 'Cannot forecast revenue or resource allocation' },
-        { field: 'Compliance', reason: 'Patient-data concerns raised but exact regulatory/security requirements unspecified', impact: 'Cannot scope compliance effort or confirm feasibility' },
-      ],
-      recommendedQuestions: [
-        { question: 'What percentage of the 1,800 monthly enquiries arrive outside staffed hours?', reason: 'Quantifies the after-hours leakage problem and sizes the opportunity', priority: 'Critical' },
-        { question: 'Who would approve an automation pilot?', reason: 'Identifies final decision maker and procurement process', priority: 'Critical' },
-        { question: 'Which systems currently receive or store patient information?', reason: 'Maps data flow for compliance and integration planning', priority: 'High' },
-        { question: 'What outcome would define a successful one-clinic pilot?', reason: 'Defines success criteria and validates pilot approach', priority: 'High' },
-        { question: 'What implementation timeline are you considering?', reason: 'Determines urgency and resource planning', priority: 'Medium' },
-      ],
-      dealStrategy: {
-        action: 'Book a 30-minute technical discovery call',
-        priority: 'Within 4 business hours',
-        ownerType: 'Solutions Engineer / Senior Sales',
-        objective: [
-          'Validate after-hours enquiry volume and leakage rate',
-          'Map patient-data boundary and compliance scope',
-          'Audit HubSpot architecture and custom objects',
-          'Document scheduling workflow and Calendar integration points',
-          'Define pilot clinic selection criteria and success metrics',
-        ],
-        avoidForNow: [
-          'Do not send generic pricing',
-          'Do not propose full 6-clinic rollout',
-          'Do not commit to HIPAA compliance without legal review',
-        ],
-        reasoning: 'The opportunity is technically promising (high score, strong signals), but budget, final authority, and compliance scope remain unresolved. A focused technical discovery call validates the highest-value assumptions before investing in a full proposal.',
-      },
-      crmPreview: {
-        company: 'VertexCare Clinics',
-        contact: 'Sarah Mitchell',
-        stage: 'Sales Qualified',
-        priority: 'High',
-        opportunityScore: 87,
-        confidence: 92,
-        primaryRequirement: 'Multi-location enquiry automation with after-hours coverage',
-        primaryPain: 'After-hours enquiry leakage across 6 clinics',
-        currentSystems: ['HubSpot', 'Google Calendar', 'WhatsApp'],
-        knownRisks: ['Patient data / HIPAA compliance', 'Integration complexity (HubSpot + Calendar + WhatsApp)', 'Multi-location rollout complexity', 'Budget unknown'],
-        missingQualification: ['Budget', 'Final procurement authority', 'Implementation timeline', 'Exact HIPAA scope'],
-        nextStep: 'Technical discovery call with Solutions Engineer',
-      },
-      followupDraft: {
-        subject: 'Reducing after-hours enquiry leakage at VertexCare',
-        body: `Hi Sarah,
-
-The volume you mentioned - around 1,800 patient enquiries each month across phone, web and WhatsApp - makes the after-hours gap especially worth examining.
-
-Rather than trying to automate all six clinics immediately, the one-clinic pilot you mentioned could be a practical way to validate the approach. We'd start by mapping your current HubSpot + Calendar + WhatsApp flow, then build a pilot that handles after-hours routing for one clinic.
-
-A few things we'd explore in a 30-minute technical discovery call:
-
-* What percentage of the 1,800 enquiries arrive outside staffed hours?
-* Which systems currently receive or store patient information?
-* What outcome would define a successful one-clinic pilot?
-* What implementation timeline are you considering?
-
-If this aligns with how you're thinking about the problem, I'd be glad to schedule a 30-minute technical discovery call this week. My calendar is here: [link].
-
-Best regards,
-Solutions Team
-LeadPilot AI`,
-        personalizationEvidence: [
-          'References disclosed enquiry volume (1,800/month)',
-          'Addresses pilot rollout strategy (one clinic first)',
-          'Recognizes HubSpot + Google Calendar + WhatsApp stack',
-          'Acknowledges privacy/compliance concerns (patient data)',
-          'Does not invent budget figures',
-          'Does not invent implementation timeline',
-          'CTA matches current qualification stage (technical discovery)',
-        ],
-      },
-      auditEvents: [
-        { timestamp: '2024-01-15T14:32:01Z', event: 'Lead received', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:01Z', event: 'Validation completed', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:02Z', event: 'Duplicate lookup completed', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:02Z', event: 'Qualification started', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:03Z', event: 'Business problem diagnosed', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:03Z', event: 'Buying signals extracted', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:03Z', event: 'Risk analysis completed', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:04Z', event: 'Qualification generated', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:19Z', event: 'Reviewer approved recommendation', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:20Z', event: 'CRM action simulated', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:20Z', event: 'Follow-up generated', status: 'completed', traceId: 'trc_abc123' },
-        { timestamp: '2024-01-15T14:32:20Z', event: 'Workflow completed', status: 'completed', traceId: 'trc_abc123' },
-      ],
-      businessImpact: {
-        traditionalManualMinutes: 12,
-        leadPilotAutomatedSeconds: 8,
-        humanReviewMinutes: 0.75,
-        illustrativeStaffTimeSaved: '~10-11 minutes per qualified enquiry',
-        disclaimer: 'Illustrative estimate based on this demo workflow. Actual results vary by organization, process maturity, and integration complexity. Not a guarantee of future performance.',
-      },
-      scenario: 'complex_b2b',
-      simulationMode: true,
-    };
-
-    // Scenario-specific adjustments
-    if (scenario === 'ambiguous') {
-      baseResult.qualification.overallScore = 68;
-      baseResult.qualification.stage = 'Review Required';
-      baseResult.qualification.priority = 'Medium';
-      baseResult.confidence.score = 54;
-      baseResult.confidence.uncertaintyFactors = [
-        'Budget not disclosed',
-        'Authority unclear (Team Lead level)',
-        'Timeline exploratory',
-        'Minimal project description provided',
-        'No company website provided',
-      ];
-      baseResult.missingInformation = [
-        { field: 'Budget', reason: 'No budget range supplied', impact: 'Cannot assess commercial viability' },
-        { field: 'Authority', reason: 'Team Lead / Individual Contributor - final decision maker unknown', impact: 'Cannot determine decision-making process' },
-        { field: 'Timeline', reason: 'Exploratory - no urgency signal', impact: 'Cannot prioritize or forecast' },
-        { field: 'Company Details', reason: 'No company website provided', impact: 'Cannot verify company legitimacy or scale' },
-      ];
-      baseResult.qualification.overallScore = 68;
-      baseResult.qualification.stage = 'Review Required';
-      baseResult.qualification.priority = 'Medium';
-      baseResult.dealStrategy = {
-        action: 'Research company + request human qualification',
-        priority: 'Within 2 business days',
-        ownerType: 'SDR / Junior Sales',
-        objective: ['Verify company legitimacy', 'Identify decision maker', 'Assess budget range', 'Determine timeline'],
-        avoidForNow: ['Do not send proposal', 'Do not schedule demo', 'Do not engage solutions engineer'],
-        reasoning: 'Insufficient information to qualify. Automated external follow-up paused pending human research and enrichment.',
-      };
-    }
-
-    if (scenario === 'duplicate') {
-      baseResult.duplicateCheck = {
-        isDuplicate: true,
-        matchType: 'email',
-        existingLead: {
-          name: 'Sarah Mitchell',
-          company: 'VertexCare Clinics',
-          lastInteraction: '12 days ago',
-        },
-      };
-      baseResult.dealStrategy = {
-        action: 'Update existing opportunity rather than create new record',
-        priority: 'Immediate',
-        ownerType: 'Sales Operations',
-        objective: ['Merge duplicate records', 'Update existing opportunity with new information', 'Preserve audit trail'],
-        avoidForNow: ['Do not create new CRM record', 'Do not send duplicate follow-up'],
-        reasoning: 'Duplicate detected via exact email match. Existing opportunity from 12 days ago should be updated with new information rather than creating a second record.',
-      };
-    }
-
-    if (scenario === 'poor_fit') {
-      baseResult.qualification.overallScore = 32;
-      baseResult.qualification.stage = 'Disqualified';
-      baseResult.qualification.priority = 'Low';
-      baseResult.confidence.score = 78;
-      baseResult.confidence.supportingFactors = [
-        'Clear budget mismatch (starter budget vs enterprise solution)',
-        'Company size mismatch (1-10 vs target 50+)',
-        'Industry mismatch (Food & Beverage vs SaaS/Tech focus)',
-        'Low enquiry volume (20/week vs 1,800+/month target)',
-      ];
-      baseResult.dealStrategy = {
-        action: 'Send polite disqualification with self-serve resources',
-        priority: 'Within 24 hours',
-        ownerType: 'SDR / Marketing',
-        objective: ['Maintain goodwill', 'Direct to self-serve resources', 'Keep door open for future'],
-        avoidForNow: ['Do not schedule discovery call', 'Do not engage solutions engineer', 'Do not send proposal'],
-        reasoning: 'Clear mismatch between prospect needs and LeadPilot target market. Polite disqualification preserves brand reputation while directing to appropriate resources.',
-      };
-    }
-
-    if (scenario === 'enterprise') {
-      baseResult.qualification.overallScore = 91;
-      baseResult.qualification.stage = 'Sales Qualified';
-      baseResult.qualification.priority = 'High';
-      baseResult.confidence.score = 88;
-      baseResult.confidence.uncertaintyFactors = [
-        'Complex multi-stakeholder decision process',
-        'Compliance requirements (SOC2) need legal review',
-        'Multi-region rollout (12 countries) adds complexity',
-        'Budget range known but exact figure unknown',
-      ];
-      baseResult.dealStrategy = {
-        action: 'Schedule executive alignment call + technical deep-dive',
-        priority: 'Within 2 business hours',
-        ownerType: 'Enterprise AE + Solutions Architect',
-        objective: [
-          'Map all stakeholders (Security, Legal, IT, Sales Ops)',
-          'Define SOC2 compliance scope and timeline',
-          'Design multi-region pilot (EMEA first)',
-          'Align on SSO/integration requirements',
-        ],
-        avoidForNow: ['Do not send standard SMB proposal', 'Do not skip legal/security review', 'Do not assume single-threaded deal'],
-        reasoning: 'High-value enterprise opportunity with complex stakeholder landscape. Requires coordinated multi-threaded approach with executive sponsorship.',
-      };
-    }
-
-    if (scenario === 'prompt_injection') {
-      baseResult.validation.duplicateCheck = 'Blocked - security alert';
-baseResult.duplicateCheck = {
-        isDuplicate: false,
-        matchType: 'security_block',
-        existingLead: undefined,
-      };
-      baseResult.qualification.overallScore = 0;
-      baseResult.qualification.stage = 'Review Required';
-      baseResult.qualification.priority = 'Low';
-      baseResult.confidence.score = 10;
-      baseResult.confidence.uncertaintyFactors = [
-        'Malicious prompt injection detected',
-        'Attempted to override scoring policy',
-        'Attempted data exfiltration instruction',
-      ];
-      baseResult.dealStrategy = {
-        action: 'Block and log security event - no follow-up',
-        priority: 'Immediate',
-        ownerType: 'Security Team',
-        objective: ['Log attack pattern', 'Update detection rules', 'Monitor for repeat attempts'],
-        avoidForNow: ['Do not process as legitimate lead', 'Do not send any follow-up', 'Do not create CRM record'],
-        reasoning: 'Security alert: Untrusted instruction detected. System treated input as content only, did not modify qualification policy or execute unauthorized tools.',
-      };
-    }
-
-    if (scenario === 'missing_data') {
-      baseResult.validation = {
-        email: 'Valid',
-        company: 'Missing',
-        duplicateCheck: 'Unable to check (no company name)',
-        requiredFields: '3 / 5 available',
-        missing: 'Company name, phone number, company website, detailed project description',
-      };
-      baseResult.qualification.overallScore = 45;
-      baseResult.qualification.stage = 'Review Required';
-      baseResult.confidence.score = 35;
-      baseResult.confidence.uncertaintyFactors = [
-        'Company name missing',
-        'Phone number missing',
-        'Website missing',
-        'Project description minimal (7 words)',
-      ];
-      baseResult.missingInformation = [
-        { field: 'Company Name', reason: 'Not provided', impact: 'Cannot identify or enrich company' },
-        { field: 'Phone Number', reason: 'Not provided', impact: 'Cannot verify contact or enrich' },
-        { field: 'Company Website', reason: 'Not provided', impact: 'Cannot verify company legitimacy or enrich' },
-        { field: 'Project Description', reason: 'Only 7 words provided', impact: 'Cannot diagnose business problem or extract buying signals' },
-      ];
-    }
-
-    if (scenario === 'crm_failure') {
-      baseResult.dealStrategy = {
-        action: 'Simulate CRM failure and demonstrate retry/recovery',
-        priority: 'Immediate (demo)',
-        ownerType: 'System Demo',
-        objective: ['Show CRM failure detection', 'Demonstrate exponential backoff retry', 'Show idempotency protection', 'Display recovery audit trail'],
-        avoidForNow: [],
-        reasoning: 'Demonstration of LeadPilot\'s resilience to downstream failures. CRM returns 503, system retries with exponential backoff, succeeds on retry without duplicate records.',
-      };
-    }
-
-    return baseResult;
   };
 
   return (
@@ -596,7 +225,7 @@ baseResult.duplicateCheck = {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!result && (
+        {!result && !error && (
           <div className="space-y-8">
             <div className="text-center space-y-4 max-w-3xl mx-auto">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold">
@@ -653,7 +282,7 @@ baseResult.duplicateCheck = {
                 className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition flex items-center justify-center gap-2"
               >
                 <span className="w-5 h-5 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-xl"></span>
+                  <span className="text-xl">✏️</span>
                 </span>
                 <span className="font-medium">Enter Your Own Lead</span>
               </button>
@@ -661,7 +290,7 @@ baseResult.duplicateCheck = {
           </div>
         )}
 
-        {showCustomForm && !result && (
+        {showCustomForm && !result && !error && (
           <div className="max-w-2xl mx-auto mt-8 bg-white border border-gray-200 rounded-xl p-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">Custom Lead Entry</h2>
@@ -838,6 +467,24 @@ baseResult.duplicateCheck = {
           </div>
         )}
 
+        {error && (
+          <div className="max-w-2xl mx-auto mt-8 bg-red-50 border border-red-200 rounded-xl p-6">
+            <div className="flex items-center gap-3 text-red-700">
+              <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-gray-900">Analysis Failed</h3>
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
         {result && (
           <div className="mt-8 space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
@@ -852,15 +499,21 @@ baseResult.duplicateCheck = {
                   {result.scenario === 'prompt_injection' && 'Security Alert - Prompt Injection Attempt'}
                   {result.scenario === 'missing_data' && 'Missing Data - Incomplete Lead'}
                   {result.scenario === 'crm_failure' && 'CRM Failure Simulation'}
+                  {result.scenario === 'custom' && `Custom Lead - ${result.lead.companyName || result.lead.fullName}`}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-1 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-xs font-mono flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" /> DEMO_MODE = true
                 </span>
-                {result.simulationMode && (
+                {result.simulation?.externalActionsExecuted === false && (
                   <span className="px-2 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-mono">
                     Simulation Mode
+                  </span>
+                )}
+                {result.security?.promptInjectionDetected && (
+                  <span className="px-2 py-1 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs font-mono flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" /> Security Alert
                   </span>
                 )}
               </div>
@@ -935,10 +588,10 @@ baseResult.duplicateCheck = {
                 onReprocess={handleReprocess}
               />
 
-<WorkflowSimulationPanel
+              <WorkflowSimulationPanel
                 isRunning={loading}
                 onRun={async () => {}}
-                simulationMode={result.simulationMode}
+                simulationMode={result.simulation?.externalActionsExecuted === false}
               />
 
               <CRMPreviewPanel data={result.crmPreview} />
@@ -987,21 +640,15 @@ baseResult.duplicateCheck = {
                 View in Dashboard <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-</div>
+          </div>
         )}
       </main>
 
-        <footer className="bg-gray-50 border-t border-gray-200 mt-12">
-          <div className="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-gray-500">
-            LeadPilot AI * AI Lead Operations & n8n Automation * Demo Mode Enabled
-          </div>
-        </footer>
-      </div>
-);
-  }
-
-export default IntelligenceLabPage;
-
-
-
-
+      <footer className="bg-gray-50 border-t border-gray-200 mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-gray-500">
+          LeadPilot AI * AI Lead Operations & n8n Automation * Demo Mode Enabled
+        </div>
+      </footer>
+    </div>
+  );
+}

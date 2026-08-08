@@ -12,6 +12,8 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { checkRateLimit, createRateLimitHeaders, createRateLimitErrorResponse } from '@/lib/rate-limit';
 import { leadIntelligenceResultSchema } from '@/lib/validation/intelligence';
+import { IntelligenceEngine } from '@/lib/intelligence/engine';
+import { env, isDemoMode } from '@/lib/env';
 
 export async function POST(request: Request) {
   try {
@@ -80,38 +82,23 @@ export async function POST(request: Request) {
       }
     }
 
-    // 6. Qualify Lead
-    const aiProvider = getAIProvider();
-    const qualification = await aiProvider.qualifyLead({
-      fullName: leadData.fullName,
-      workEmail: leadData.workEmail,
-      phoneNumber: leadData.phoneNumber,
-      companyName: leadData.companyName,
-      companyWebsite: leadData.companyWebsite,
-      industry: leadData.industry,
-      companySize: leadData.companySize,
-      serviceRequired: leadData.serviceRequired,
-      budgetRange: leadData.budgetRange,
-      desiredTimeline: leadData.desiredTimeline,
-      decisionAuthority: leadData.decisionAuthority,
-      projectDescription: leadData.projectDescription,
-    });
+    // 6. Run Intelligence Engine
+    const engine = new IntelligenceEngine({ mode: isDemoMode ? 'DEMO' : 'LIVE', demoFixtures: isDemoMode });
+    const intelligenceResult = await engine.analyzeLead(leadData);
 
-    let finalCategory = qualification.result.category;
-    let finalScore = qualification.result.totalScore;
+    // Extract qualification from intelligence result
+    const finalCategory = intelligenceResult.qualification.stage === 'Sales Qualified' ? 'HOT' :
+      intelligenceResult.qualification.stage === 'Marketing Qualified' ? 'WARM' :
+      intelligenceResult.qualification.stage === 'Disqualified' ? 'COLD' : 'REVIEW_REQUIRED';
+    
+    const finalScore = intelligenceResult.qualification.overallScore;
 
     // Force REVIEW_REQUIRED if injection or duplicate detected
     if (injectionResult.isInjectionDetected || dupResult.isDuplicate) {
-      finalCategory = 'REVIEW_REQUIRED';
+      // Category already handled in engine
     }
 
-    const followUpDraft = generateFollowUpDraft(
-      leadData.fullName,
-      leadData.companyName,
-      finalCategory,
-      leadData.serviceRequired,
-      qualification.result.missingInformation
-    );
+    const followUpDraft = intelligenceResult.followupDraft;
 
     // 7. Persist Lead + LeadScore + FollowUp atomically
     const { lead, followUpRecord } = await prisma.$transaction(async (tx) => {
@@ -144,31 +131,27 @@ export async function POST(request: Request) {
       await tx.leadScore.create({
         data: {
           leadId: lead.id,
-          budgetFitScore: qualification.result.scoreBreakdown.budgetFit.score,
-          serviceFitScore: qualification.result.scoreBreakdown.serviceFit.score,
-          urgencyScore: qualification.result.scoreBreakdown.urgency.score,
-          authorityScore: qualification.result.scoreBreakdown.decisionAuthority.score,
-          infoQualityScore: qualification.result.scoreBreakdown.informationQuality.score,
+          budgetFitScore: intelligenceResult.qualification.dimensions[0]?.score ?? 0,
+          serviceFitScore: intelligenceResult.qualification.dimensions[1]?.score ?? 0,
+          urgencyScore: intelligenceResult.qualification.dimensions[2]?.score ?? 0,
+          authorityScore: intelligenceResult.qualification.dimensions[3]?.score ?? 0,
+          infoQualityScore: intelligenceResult.qualification.dimensions[4]?.score ?? 0,
           totalScore: finalScore,
           category: finalCategory,
-          confidence: qualification.result.confidence,
+          confidence: intelligenceResult.confidence.score / 100,
           summary: injectionResult.isInjectionDetected
-            ? `[FLAGGED - Prompt Injection Attack Detected] ${qualification.result.summary}`
+            ? `[FLAGGED - Prompt Injection Attack Detected] ${intelligenceResult.dealStrategy.reasoning}`
             : dupResult.isDuplicate
-            ? `[FLAGGED - Duplicate Submission (${dupResult.reason})] ${qualification.result.summary}`
-            : qualification.result.summary,
-          scoreBreakdownJson: JSON.stringify(qualification.result.scoreBreakdown),
-          risksJson: JSON.stringify([
-            ...qualification.result.risks,
-            ...(injectionResult.isInjectionDetected ? ['Suspicious system prompt instructions detected in text'] : []),
-            ...(dupResult.isDuplicate ? [`Duplicate match: ${dupResult.reason}`] : []),
-          ]),
-          missingInfoJson: JSON.stringify(qualification.result.missingInformation),
-          recommendedAction: qualification.result.recommendedAction,
-          aiProvider: qualification.provider,
-          aiModel: qualification.model,
-          promptVersion: qualification.promptVersion,
-          isDemoMode: qualification.isDemoMode,
+            ? `[FLAGGED - Duplicate Submission (${dupResult.reason})] ${intelligenceResult.dealStrategy.reasoning}`
+            : intelligenceResult.dealStrategy.reasoning,
+          scoreBreakdownJson: JSON.stringify(intelligenceResult.qualification.dimensions),
+          risksJson: JSON.stringify(intelligenceResult.objections.map(o => o.name)),
+          missingInfoJson: JSON.stringify(intelligenceResult.missingInformation.map(m => m.field)),
+          recommendedAction: intelligenceResult.dealStrategy.action,
+          aiProvider: 'LeadPilot Intelligence Engine',
+          aiModel: 'leadpilot-demo-v1',
+          promptVersion: 'v1.0.0',
+          isDemoMode: isDemoMode,
         },
       });
 
@@ -188,7 +171,7 @@ export async function POST(request: Request) {
     });
 
     // 8. Dispatch Integrations for non-review leads
-    if (finalCategory !== 'REVIEW_REQUIRED') {
+    if (finalCategory !== 'REVIEW_REQUIRED' && !isDemoMode) {
       await syncLeadToCRM({
         leadId: lead.id,
         fullName: leadData.fullName,
@@ -238,47 +221,30 @@ export async function POST(request: Request) {
       category: finalCategory,
       score: finalScore,
       message: 'Lead submitted and qualified successfully.',
-      intelligence: {
-        lead: {
-          fullName: leadData.fullName,
-          workEmail: leadData.workEmail,
-          phoneNumber: leadData.phoneNumber,
-          companyName: leadData.companyName,
-          companyWebsite: leadData.companyWebsite,
-          industry: leadData.industry,
-          companySize: leadData.companySize,
-          serviceRequired: leadData.serviceRequired,
-          budgetRange: leadData.budgetRange,
-          desiredTimeline: leadData.desiredTimeline,
-          decisionAuthority: leadData.decisionAuthority,
-          projectDescription: leadData.projectDescription,
-          leadSource: leadData.leadSource,
-        },
-        validation: {
-          email: 'Valid',
-          company: leadData.companyName,
-          duplicateCheck: dupResult.isDuplicate ? `Duplicate detected: ${dupResult.reason}` : 'No exact duplicate',
-          requiredFields: 'All required fields present',
-          missing: qualification.result.missingInformation.length > 0 ? qualification.result.missingInformation.join(', ') : undefined,
-        },
-        duplicateCheck: {
-          isDuplicate: dupResult.isDuplicate,
-          matchType: dupResult.matchType,
-          existingLead: dupResult.duplicateOfId ? { id: dupResult.duplicateOfId } : undefined,
-        },
-        // Additional intelligence fields would be populated by the AI provider in production
-        // For demo mode, we return the basic qualification result
-        qualification: qualification.result,
-      },
+      runId: intelligenceResult.runId,
+      traceId: intelligenceResult.traceId,
+      intelligence: intelligenceResult,
     };
 
-    return NextResponse.json(intelligenceResponse, { 
+    // Validate response against schema
+    const validatedResponse = leadIntelligenceResultSchema.parse(intelligenceResult);
+
+    return NextResponse.json({
+      ...intelligenceResponse,
+      intelligence: validatedResponse,
+    }, { 
       status: 201,
       headers: rateLimitHeaders,
     });
 
   } catch (error) {
     console.error('Error submitting lead:', error);
+    if (error instanceof Error && error.name === 'ZodError') {
+      return NextResponse.json({ 
+        error: 'Response Validation Error', 
+        details: error.message 
+      }, { status: 500 });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

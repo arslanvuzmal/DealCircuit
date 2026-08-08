@@ -47,16 +47,16 @@ export default function HomePage() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <Link
-              href="/submit"
+              href="/intelligence"
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm transition flex items-center gap-2 shadow"
             >
-              <Zap className="w-4 h-4" /> Try a Lead <ArrowRight className="w-4 h-4" />
+              <Zap className="w-4 h-4" /> Try Lead Intelligence <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
-              href="/dashboard"
+              href="/submit"
               className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg text-sm transition flex items-center gap-2 border border-gray-300"
             >
-              View Dashboard
+              Use Classic Lead Form
             </Link>
           </div>
         </div>
@@ -220,16 +220,16 @@ export default function HomePage() {
           <h3 className="text-xl font-bold text-gray-900">Ready to automate your lead operations?</h3>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
-              href="/submit"
+              href="/intelligence"
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm transition flex items-center gap-2 shadow"
             >
-              <Zap className="w-4 h-4" /> Try a Lead
+              <Zap className="w-4 h-4" /> Try Lead Intelligence
             </Link>
             <Link
-              href="/login"
+              href="/submit"
               className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg text-sm transition flex items-center gap-2 border border-gray-300"
             >
-              View Dashboard
+              Use Classic Lead Form
             </Link>
           </div>
         </div>
