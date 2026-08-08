@@ -115,6 +115,7 @@ export const scenarioTypeSchema = z.enum([
   'prompt_injection',
   'missing_data',
   'crm_failure',
+  'custom',
 ]);
 
 export const leadIntelligenceResultSchema = z.object({

@@ -170,6 +170,26 @@ export const SCENARIOS: Record<ScenarioType, {
       leadSource: 'Website Form',
     },
   },
+  custom: {
+    label: 'Custom Lead',
+    description: 'Enter your own lead data for custom analysis.',
+    icon: '✏️',
+    leadData: {
+      fullName: '',
+      workEmail: '',
+      phoneNumber: '',
+      companyName: '',
+      companyWebsite: '',
+      industry: 'Software / SaaS',
+      companySize: '51-200',
+      serviceRequired: 'Custom AI Lead Scoring & CRM Automation',
+      budgetRange: '$25k-$50k',
+      desiredTimeline: '1-3 Months',
+      decisionAuthority: 'Final Decision Maker',
+      projectDescription: '',
+      leadSource: 'Website Form',
+    },
+  },
 };
 
 export type ScenarioKey = keyof typeof SCENARIOS;
