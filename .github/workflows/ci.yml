@@ -62,6 +62,9 @@ jobs:
 
       - name: Run Vitest Unit Tests
         run: npm run test
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
+          DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
 
       - name: Run Next.js Production Build
         run: npm run build
