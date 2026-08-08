@@ -83,8 +83,9 @@ export async function POST(request: Request) {
     }
 
     // 6. Run Intelligence Engine
+    const scenario = rawBody.scenario;
     const engine = new IntelligenceEngine({ mode: isDemoMode ? 'DEMO' : 'LIVE', demoFixtures: isDemoMode });
-    const intelligenceResult = await engine.analyzeLead(leadData);
+    const intelligenceResult = await engine.analyzeLead(leadData, scenario);
 
     // Extract qualification from intelligence result
     const finalCategory = intelligenceResult.qualification.stage === 'Sales Qualified' ? 'HOT' :
