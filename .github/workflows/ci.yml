@@ -52,6 +52,7 @@ jobs:
           DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
           ALLOW_PRODUCTION_SEED: "true"
           DEMO_MODE: "true"
+          NODE_ENV: "production"
 
       - name: Run Type Check
         run: npm run type-check
@@ -70,3 +71,4 @@ jobs:
           DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/leadpilot_test"
           JWT_SECRET: "ci-only-long-random-secret-key-12345"
           INTERNAL_API_SECRET: "ci-only-long-internal-secret-key-12345"
+          NODE_ENV: "production"
