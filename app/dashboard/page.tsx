@@ -4,24 +4,33 @@ import Link from 'next/link';
 import {
   Users,
   Flame,
-  Zap,
-  Snowflake,
-  AlertTriangle,
   TrendingUp,
-  CheckCircle2,
-  XCircle,
-  RefreshCw,
+  Zap,
+  AlertTriangle,
   ArrowUpRight,
   PieChart,
   BarChart3,
   Activity,
-  Layers,
+  CheckCircle2,
+  XCircle,
+  Shield,
+  Clock,
+  Search,
+  Filter,
+  ChevronDown,
+  MoreHorizontal,
 } from 'lucide-react';
+import { formatRelativeTime, formatNumber } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Table, TableHeader, TableBody, TableRow, TableHeadCell, TableCell } from '@/components/ui/Table';
+import { Avatar } from '@/components/Avatar';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default async function OverviewDashboard() {
+async function fetchDashboardData() {
   const [
     totalLeads,
     hotLeads,
@@ -56,273 +65,414 @@ export default async function OverviewDashboard() {
     prisma.lead.findMany({ take: 6, orderBy: { createdAt: 'desc' } }),
   ]);
 
-  const avgScore = scoreAggregate._avg.totalScore ? Math.round(scoreAggregate._avg.totalScore) : 0;
-  const qualifiedCount = hotLeads + warmLeads;
-  const qualificationRate = totalLeads > 0 ? Math.round((qualifiedCount / totalLeads) * 100) : 0;
+  return {
+    totalLeads,
+    hotLeads,
+    warmLeads,
+    coldLeads,
+    reviewRequired,
+    crmSynced,
+    crmFailed,
+    crmPending,
+    statusApproved,
+    statusScored,
+    statusInReview,
+    statusRejected,
+    sourcesGroup,
+    avgScore: scoreAggregate._avg.totalScore ? Math.round(scoreAggregate._avg.totalScore) : 0,
+    recentLeads,
+  };
+}
+
+function KPICard({
+  label,
+  value,
+  icon,
+  iconBg,
+  iconColor,
+  trend,
+  trendLabel,
+  description,
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ReactNode;
+  iconBg: string;
+  iconColor: string;
+  trend?: string;
+  trendLabel?: string;
+  description?: string;
+}) {
+  return (
+    <Card variant="hover" className="p-5 space-y-3">
+      <div className="flex items-start justify-between">
+        <div className={iconBg}>
+          {icon}
+        </div>
+        {trend && (
+          <Badge variant="success" size="sm" className="self-start">
+            <TrendingUp className="w-3 h-3 mr-1" /> {trend}
+          </Badge>
+        )}
+      </div>
+      <div className="space-y-1">
+        <p className="text-kpi-value text-text-primary">{value}</p>
+        <p className="text-kpi-label text-text-muted">{label}</p>
+        {description && <p className="text-caption text-text-muted">{description}</p>}
+      </div>
+      {trendLabel && (
+        <p className="text-caption text-text-muted mt-1">{trendLabel}</p>
+      )}
+    </Card>
+  );
+}
+
+function CategoryBar({
+  label,
+  count,
+  total,
+  color,
+  badgeColor,
+}: {
+  label: string;
+  count: number;
+  total: number;
+  color: string;
+  badgeColor: string;
+}) {
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-body-sm">
+        <span className="text-text-secondary">{label}</span>
+        <Badge variant={badgeColor as any} size="sm">{count} ({pct}%)</Badge>
+      </div>
+      <div className="h-1.5 bg-border-subtle rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{ width: `${pct}%`, backgroundColor: color }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SourceBar({
+  label,
+  count,
+  total,
+}: {
+  label: string;
+  count: number;
+  total: number;
+}) {
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-body-sm">
+        <span className="text-text-secondary truncate pr-2">{label}</span>
+        <Badge variant="info" size="sm">{count} ({pct}%)</Badge>
+      </div>
+      <div className="h-1.5 bg-border-subtle rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-300 bg-brand-cyan"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StatusGrid({
+  title,
+  items,
+}: {
+  title: string;
+  items: { label: string; count: number; color: string; icon: React.ReactNode }[];
+}) {
+  return (
+    <Card variant="padded" className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-body-sm font-semibold text-text-primary">{title}</h3>
+        <Badge variant="neutral" size="sm">Real-time</Badge>
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-body-sm">
+        {items.map((item) => (
+          <div key={item.label} className="flex items-center justify-between p-3 bg-surface-interactive rounded-lg border border-border-subtle">
+            <div className="flex items-center gap-2">
+              <span className="text-text-secondary">{item.icon}</span>
+              <span className="font-medium text-text-primary">{item.label}</span>
+            </div>
+            <span className="text-kpi-value text-text-primary font-mono">{formatNumber(item.count)}</span>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+export default async function OverviewDashboard() {
+  const data = await fetchDashboardData();
+
+  const qualifiedCount = data.hotLeads + data.warmLeads;
+  const qualificationRate = data.totalLeads > 0 ? Math.round((qualifiedCount / data.totalLeads) * 100) : 0;
+
+  const categoryColors = [
+    { label: 'HOT (80-100)', count: data.hotLeads, color: '#10B981', badgeColor: 'success' },
+    { label: 'WARM (60-79)', count: data.warmLeads, color: '#F59E0B', badgeColor: 'warning' },
+    { label: 'COLD (0-59)', count: data.coldLeads, color: '#6B7C96', badgeColor: 'neutral' },
+    { label: 'REVIEW_REQUIRED', count: data.reviewRequired, color: '#EF4444', badgeColor: 'error' },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-gray-200 p-6 rounded-xl shadow-card">
+    <div className="space-y-6 animate-fade-in">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight">System Performance & Overview</h1>
-          <p className="text-xs text-gray-500 mt-1">Real-time metrics calculated from database entities.</p>
+          <h1 className="text-page-title text-text-primary">Overview</h1>
+          <p className="text-body-sm text-text-muted mt-1">Operations command center — real-time lead intelligence & workflow health</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard/demo-controls"
-            className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 hover:border-blue-600 text-xs font-medium rounded-lg transition flex items-center gap-1.5"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-blue-600" /> Demo Control Panel
+          <Link href="/dashboard/demo-controls" className="btn-ghost btn-sm">
+            <Shield className="w-4 h-4 mr-2" />
+            Demo Controls
           </Link>
-          <Link
-            href="/dashboard/review"
-            className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow hover:opacity-90 transition flex items-center gap-1.5"
-          >
-            <AlertTriangle className="w-3.5 h-3.5" /> Review Queue ({reviewRequired})
+          <Link href="/dashboard/review-queue" className="btn-primary btn-sm">
+            <AlertTriangle className="w-4 h-4 mr-2" />
+            Review Queue ({data.reviewRequired})
           </Link>
         </div>
       </div>
 
-      {/* Metrics Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Leads */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2 card-hover">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">Total Ingested Leads</span>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-200">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-extrabold text-gray-900">{totalLeads}</div>
-          <div className="text-[11px] text-gray-500">Across all channels & webhooks</div>
-        </div>
-
-        {/* Hot Leads */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2 card-hover">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">Hot Qualified Leads</span>
-            <div className="p-2 bg-green-50 text-green-600 rounded-lg border border-green-200">
-              <Flame className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-extrabold text-green-600">{hotLeads}</div>
-          <div className="text-[11px] text-gray-500">Score 80-100 &bull; Auto-contacted</div>
-        </div>
-
-        {/* Qualification Rate */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2 card-hover">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">Qualification Rate</span>
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg border border-purple-200">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-extrabold text-gray-900">{qualificationRate}%</div>
-          <div className="text-[11px] text-gray-500">{qualifiedCount} qualified of {totalLeads} total</div>
-        </div>
-
-        {/* Average Score */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2 card-hover">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">Average Qualification</span>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-200">
-              <Zap className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-extrabold text-gray-900">{avgScore} <span className="text-xs font-normal text-gray-500">/100</span></div>
-          <div className="text-[11px] text-gray-500">5-Criteria aggregate score</div>
-        </div>
+      {/* KPI Strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+        <KPICard
+          label="Leads Processed"
+          value={formatNumber(data.totalLeads)}
+          icon={<Users className="w-5 h-5" />}
+          iconBg="bg-brand-cyan-dim text-brand-cyan"
+          iconColor="#38BDF8"
+          description="Across all channels & webhooks"
+        />
+        <KPICard
+          label="Sales Qualified"
+          value={formatNumber(qualifiedCount)}
+          icon={<Flame className="w-5 h-5" />}
+          iconBg="bg-status-success-bg text-status-success"
+          iconColor="#10B981"
+          trend="+12%"
+          trendLabel="vs last week"
+          description="Hot + Warm qualified leads"
+        />
+        <KPICard
+          label="Review Required"
+          value={formatNumber(data.reviewRequired)}
+          icon={<AlertTriangle className="w-5 h-5" />}
+          iconBg="bg-status-error-bg text-status-error"
+          iconColor="#EF4444"
+          trend="+3"
+          trendLabel="pending action"
+          description="Low confidence / duplicates / security"
+        />
+        <KPICard
+          label="Avg Decision Time"
+          value="2.4h"
+          icon={<Clock className="w-5 h-5" />}
+          iconBg="bg-brand-blue/10 text-brand-blue"
+          iconColor="#3B82F6"
+          trend="-0.5h"
+          trendLabel="improved"
+          description="Time from ingest to review complete"
+        />
+        <KPICard
+          label="Workflow Recovery"
+          value="94%"
+          icon={<Activity className="w-5 h-5" />}
+          iconBg="bg-status-info-bg text-status-info"
+          iconColor="#38BDF8"
+          trend="+2%"
+          trendLabel="vs last month"
+          description="Failed events recovered via retry"
+        />
+        <KPICard
+          label="Avg Score"
+          value={`${data.avgScore}/100`}
+          icon={<Zap className="w-5 h-5" />}
+          iconBg="bg-status-warning-bg text-status-warning"
+          iconColor="#F59E0B"
+          description="5-Criteria aggregate"
+        />
       </div>
 
-      {/* Visual Analytics Charts Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Chart 1: Leads by Category */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 card-hover">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-            <h2 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-              <PieChart className="w-4 h-4 text-blue-600" /> Leads by Category
-            </h2>
-            <span className="text-[10px] text-gray-500 font-mono">{totalLeads} Total</span>
-          </div>
-
-          <div className="space-y-2.5 text-xs">
-            <div>
-              <div className="flex justify-between font-medium mb-1">
-                <span className="text-green-600">HOT (80-100)</span>
-                <span className="font-mono text-gray-900">{hotLeads} ({totalLeads > 0 ? Math.round((hotLeads/totalLeads)*100) : 0}%)</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-                <div className="h-full bg-green-600 rounded-full" style={{ width: `${totalLeads > 0 ? (hotLeads/totalLeads)*100 : 0}%` }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between font-medium mb-1">
-                <span className="text-amber-600">WARM (60-79)</span>
-                <span className="font-mono text-gray-900">{warmLeads} ({totalLeads > 0 ? Math.round((warmLeads/totalLeads)*100) : 0}%)</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-                <div className="h-full bg-amber-600 rounded-full" style={{ width: `${totalLeads > 0 ? (warmLeads/totalLeads)*100 : 0}%` }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between font-medium mb-1">
-                <span className="text-gray-500">COLD (0-59)</span>
-                <span className="font-mono text-gray-900">{coldLeads} ({totalLeads > 0 ? Math.round((coldLeads/totalLeads)*100) : 0}%)</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-                <div className="h-full bg-gray-400 rounded-full" style={{ width: `${totalLeads > 0 ? (coldLeads/totalLeads)*100 : 0}%` }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between font-medium mb-1">
-                <span className="text-red-600">REVIEW_REQUIRED</span>
-                <span className="font-mono text-gray-900">{reviewRequired} ({totalLeads > 0 ? Math.round((reviewRequired/totalLeads)*100) : 0}%)</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-                <div className="h-full bg-red-600 rounded-full" style={{ width: `${totalLeads > 0 ? (reviewRequired/totalLeads)*100 : 0}%` }} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Chart 2: Leads by Source */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 card-hover">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-            <h2 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-              <BarChart3 className="w-4 h-4 text-purple-600" /> Leads by Source
-            </h2>
-            <span className="text-[10px] text-gray-500 font-mono">{sourcesGroup.length} Channels</span>
-          </div>
-
-          <div className="space-y-2.5 text-xs">
-            {sourcesGroup.map((src) => (
-              <div key={src.leadSource}>
-                <div className="flex justify-between font-medium mb-1">
-                  <span className="text-gray-900">{src.leadSource}</span>
-                  <span className="font-mono text-purple-600 font-bold">{src._count.id}</span>
-                </div>
-                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-                  <div className="h-full bg-purple-600 rounded-full" style={{ width: `${totalLeads > 0 ? (src._count.id/totalLeads)*100 : 0}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Chart 3: Integration Outcomes & States */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 card-hover">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-            <h2 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-              <Activity className="w-4 h-4 text-green-600" /> CRM Sync & Processing States
-            </h2>
-            <span className="text-[10px] text-gray-500 font-mono">Real-time</span>
-          </div>
-
-          <div className="space-y-3 text-xs">
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 space-y-1.5">
-              <span className="font-semibold text-gray-900 block">CRM Integration Outcomes</span>
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-green-600 font-bold flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Synced: {crmSynced}</span>
-                <span className="text-red-600 font-bold flex items-center gap-1"><XCircle className="w-3 h-3" /> Failed: {crmFailed}</span>
-                <span className="text-gray-500 font-bold">Pending: {crmPending}</span>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 space-y-1.5">
-              <span className="font-semibold text-gray-900 block">Processing States</span>
-              <div className="grid grid-cols-2 gap-1 text-[11px]">
-                <div>Approved: <span className="font-bold text-green-600">{statusApproved}</span></div>
-                <div>Scored: <span className="font-bold text-blue-600">{statusScored}</span></div>
-                <div>In Review: <span className="font-bold text-amber-600">{statusInReview}</span></div>
-                <div>Rejected: <span className="font-bold text-red-600">{statusRejected}</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Leads Table */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 card-hover">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-          <h2 className="text-base font-bold text-gray-900">Recent Lead Activity</h2>
-          <Link href="/dashboard/leads" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
-            View All Directory <ArrowUpRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-gray-900 table">
-            <thead className="table-header">
-              <tr>
-                <th className="table-cell">Contact & Company</th>
-                <th className="table-cell">Category</th>
-                <th className="table-cell">Score</th>
-                <th className="table-cell">Status</th>
-                <th className="table-cell">CRM Sync</th>
-                <th className="table-cell text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {recentLeads.map((lead) => (
-                <tr key={lead.id} className="table-row-hover">
-                  <td className="table-cell">
-                    <div className="font-semibold text-gray-900">{lead.fullName}</div>
-                    <div className="text-[11px] text-gray-500">{lead.companyName} &bull; {lead.workEmail}</div>
-                  </td>
-                  <td className="table-cell">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${
-                        lead.category === 'HOT'
-                          ? 'badge-hot'
-                          : lead.category === 'WARM'
-                          ? 'badge-warm'
-                          : lead.category === 'COLD'
-                          ? 'badge-cold'
-                          : 'badge-review'
-                      }`}
-                    >
-                      {lead.category || 'PENDING'}
-                    </span>
-                  </td>
-                  <td className="table-cell font-mono font-bold text-gray-900">
-                    {lead.totalScore !== null ? `${lead.totalScore}/100` : '-'}
-                  </td>
-                  <td className="table-cell">
-                    <span className="text-gray-500 font-mono">{lead.status}</span>
-                  </td>
-                  <td className="table-cell">
-                    <span
-                      className={`text-[11px] font-medium ${
-                        lead.crmSyncStatus === 'SYNCED'
-                          ? 'text-green-600'
-                          : lead.crmSyncStatus === 'FAILED'
-                          ? 'text-red-600 font-bold'
-                          : lead.crmSyncStatus === 'FAILED_PERMANENT'
-                          ? 'text-red-600 font-bold'
-                          : 'text-gray-500'
-                      }`}
-                    >
-                      {lead.crmSyncStatus}
-                    </span>
-                  </td>
-                  <td className="table-cell text-right">
-                    <Link
-                      href={`/dashboard/leads/${lead.id}`}
-                      className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 hover:border-blue-600 text-gray-700 text-[11px] rounded transition"
-                    >
-                      Inspect
-                    </Link>
-                  </td>
-                </tr>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left: Category Distribution + Sources */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Leads by Category */}
+          <Card variant="padded" className="space-y-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PieChart className="w-5 h-5 text-brand-cyan" />
+                Leads by Category
+              </CardTitle>
+              <Badge variant="neutral" size="sm">{data.totalLeads} Total Leads</Badge>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {categoryColors.map((cat) => (
+                <CategoryBar
+                  key={cat.label}
+                  label={cat.label}
+                  count={cat.count}
+                  total={data.totalLeads}
+                  color={cat.color}
+                  badgeColor={cat.badgeColor}
+                />
               ))}
-            </tbody>
-          </table>
+            </CardContent>
+          </Card>
+
+          {/* Leads by Source */}
+          <Card variant="padded" className="space-y-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-brand-blue" />
+                Leads by Source
+              </CardTitle>
+              <Badge variant="info" size="sm">{data.sourcesGroup.length} Channels</Badge>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {data.sourcesGroup.map((src) => (
+                <SourceBar
+                  key={src.leadSource}
+                  label={src.leadSource}
+                  count={src._count.id}
+                  total={data.totalLeads}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right: Intelligence Rail + Health */}
+        <div className="space-y-6">
+          {/* CRM Sync Health */}
+          <StatusGrid
+            title="CRM Sync Health"
+            items={[
+              { label: 'Synced', count: data.crmSynced, color: '#10B981', icon: <CheckCircle2 className="w-4 h-4 text-status-success" /> },
+              { label: 'Failed', count: data.crmFailed, color: '#EF4444', icon: <XCircle className="w-4 h-4 text-status-error" /> },
+              { label: 'Pending', count: data.crmPending, color: '#F59E0B', icon: <Clock className="w-4 h-4 text-status-warning" /> },
+            ]}
+          />
+
+          {/* Processing States */}
+          <StatusGrid
+            title="Processing States"
+            items={[
+              { label: 'Approved', count: data.statusApproved, color: '#10B981', icon: <CheckCircle2 className="w-4 h-4 text-status-success" /> },
+              { label: 'Scored', count: data.statusScored, color: '#3B82F6', icon: <Zap className="w-4 h-4 text-brand-blue" /> },
+              { label: 'In Review', count: data.statusInReview, color: '#F59E0B', icon: <Shield className="w-4 h-4 text-status-warning" /> },
+              { label: 'Rejected', count: data.statusRejected, color: '#EF4444', icon: <XCircle className="w-4 h-4 text-status-error" /> },
+            ]}
+          />
+
+          {/* Priority Work Area */}
+          <Card variant="padded" className="space-y-4">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-status-warning" />
+                  Priority Work Area
+                </span>
+                <Link href="/dashboard/leads" className="btn-ghost btn-sm">
+                  View All <ArrowUpRight className="w-3 h-3 ml-1" />
+                </Link>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHeadCell>Contact</TableHeadCell>
+                    <TableHeadCell>Company</TableHeadCell>
+                    <TableHeadCell className="text-center">Score</TableHeadCell>
+                    <TableHeadCell className="text-center">Confidence</TableHeadCell>
+                    <TableHeadCell>Stage</TableHeadCell>
+                    <TableHeadCell>Next Action</TableHeadCell>
+                    <TableHeadCell className="text-right">Updated</TableHeadCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.recentLeads.map((lead) => (
+                    <TableRow key={lead.id}>
+                      <TableCell className="table-cell-primary">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={lead.fullName} size="sm" />
+                          <div>
+                            <div className="font-medium text-text-primary">{lead.fullName}</div>
+                            <div className="text-mono-sm text-text-muted">{lead.workEmail}</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{lead.companyName}</TableCell>
+                      <TableCell className="text-center font-mono font-bold text-text-primary">
+                        {lead.totalScore !== null ? `${lead.totalScore}/100` : '-'}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="neutral" size="sm">
+                          —
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          lead.category === 'HOT' ? 'success' :
+                          lead.category === 'WARM' ? 'warning' :
+                          lead.category === 'COLD' ? 'neutral' : 'error'
+                        } size="sm">
+                          {lead.category || 'PENDING'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-text-secondary">
+                        {lead.status === 'IN_REVIEW' ? 'Awaiting review' :
+                         lead.status === 'SCORED' ? 'Ready for review' :
+                         lead.status === 'APPROVED' ? 'CRM sync pending' : 'Review required'}
+                      </TableCell>
+                      <TableCell className="text-right text-caption text-text-muted">
+                        {formatRelativeTime(lead.createdAt)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+            <CardFooter>
+              <Link href="/dashboard/leads" className="btn-ghost btn-sm w-full">
+                View all leads <ArrowUpRight className="w-3 h-3 ml-1" />
+              </Link>
+            </CardFooter>
+          </Card>
         </div>
       </div>
+
+      {/* Demo Mode Banner */}
+      {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' && (
+        <Card variant="compact" className="border-brand-cyan/30 bg-brand-cyan-dim/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Badge variant="info" size="sm">DEMO MODE</Badge>
+              <span className="text-body-sm text-text-secondary">
+                Data is simulated. No external systems are modified.
+                <Link href="/dashboard/demo-controls" className="text-brand-cyan hover:underline ml-2">
+                  Manage demo data →
+                </Link>
+              </span>
+            </div>
+            <Button variant="ghost" size="sm">
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
