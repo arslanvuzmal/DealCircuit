@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Zap, Bot, Database, Workflow, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Zap, Bot, Database, Workflow, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -16,7 +16,7 @@ export default function HomePage() {
             <Logo size="md" />
             <div>
               <h1 className="text-heading-lg text-text-primary tracking-tight">LeadPilot AI</h1>
-              <p className="text-caption text-text-muted">AI Lead Operations & n8n Automation</p>
+              <p className="text-caption text-text-muted">Lead Intelligence & Revenue Operations</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -63,17 +63,22 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: '📋', title: 'Manual Review', desc: 'Every lead read by hand' },
-              { icon: '🔍', title: 'Duplicate Checking', desc: 'Same lead enters twice' },
-              { icon: '📊', title: 'Inconsistent Scoring', desc: 'No standard criteria' },
-              { icon: '⏱️', title: 'Delayed Response', desc: 'Hours before follow-up' },
-              { icon: '🔗', title: 'Manual CRM Entry', desc: 'Copy-paste errors' },
-              { icon: '🤝', title: 'Forgotten Handoffs', desc: 'Sales never notified' },
-              { icon: '🔧', title: 'Failed Automations', desc: 'Silent workflow stops' },
-              { icon: '📝', title: 'No Audit Trail', desc: 'What happened when?' },
+              { icon: Bot, title: 'Manual Review', desc: 'Every lead read by hand', color: 'cyan' },
+              { icon: ShieldCheck, title: 'Duplicate Checking', desc: 'Same lead enters twice', color: 'blue' },
+              { icon: Database, title: 'Inconsistent Scoring', desc: 'No standard criteria', color: 'amber' },
+              { icon: Zap, title: 'Delayed Response', desc: 'Hours before follow-up', color: 'emerald' },
+              { icon: Workflow, title: 'Manual CRM Entry', desc: 'Copy-paste errors', color: 'coral' },
+              { icon: Bot, title: 'Forgotten Handoffs', desc: 'Sales never notified', color: 'blue' },
+              { icon: AlertTriangle, title: 'Failed Automations', desc: 'Silent workflow stops', color: 'amber' },
+              { icon: CheckCircle2, title: 'No Audit Trail', desc: 'What happened when?', color: 'emerald' },
             ].map((item, i) => (
               <Card key={i} variant="hover" className="p-6 space-y-3 text-center">
-                <div className="text-3xl mx-auto">{item.icon}</div>
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto`} style={{
+                  backgroundColor: `var(--color-brand-${item.color}-dim)`,
+                  color: `var(--color-brand-${item.color}-light)`
+                }}>
+                  <item.icon className="w-5 h-5" />
+                </div>
                 <h4 className="font-semibold text-text-primary">{item.title}</h4>
                 <p className="text-body-sm text-text-muted">{item.desc}</p>
               </Card>
@@ -85,7 +90,8 @@ export default function HomePage() {
         <section className="space-y-8">
           <div className="text-center space-y-3 mb-8">
             <h3 className="text-section-title text-text-primary">The Solution</h3>
-            <p className="text-body text-text-secondary max-w-2xl mx-auto">End-to-end lead operations with human control at every decision point.</p>
+            <p className="text-body text-text-secondary max-w-2xl mx-auto">End-to-end lead operations with human control at every decision point.
+            </p>
           </div>
           <Card variant="padded" className="space-y-4">
             <div className="flex flex-wrap items-center justify-center gap-2 text-body-sm font-medium">
@@ -116,7 +122,7 @@ export default function HomePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-body-sm font-mono text-text-secondary">
-                <div>Lead Form → Inbox</div>
+                <div>Lead Form \u2192 Inbox</div>
                 <ArrowRight className="mx-auto text-text-muted" />
                 <div>Spreadsheet</div>
                 <ArrowRight className="mx-auto text-text-muted" />
@@ -139,7 +145,7 @@ export default function HomePage() {
                 <ArrowRight className="mx-auto text-text-muted" />
                 <div>LeadPilot AI</div>
                 <ArrowRight className="mx-auto text-text-muted" />
-                <div>n8n Workflows</div>
+                <div>Workflow Engine</div>
                 <ArrowRight className="mx-auto text-text-muted" />
                 <div>CRM + Follow-up + Team</div>
               </CardContent>
@@ -147,18 +153,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* n8n Section */}
+        {/* Workflow Automation Section */}
         <section className="space-y-8">
           <div className="text-center space-y-3 mb-8">
-            <h3 className="text-section-title text-text-primary">What n8n Automates</h3>
+            <h3 className="text-section-title text-text-primary">Workflow Automation</h3>
             <p className="text-body text-text-secondary max-w-2xl mx-auto">Four production workflows handle the operational heavy lifting.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: 'Lead Intake', desc: 'Webhook → Qualify → CRM → Log', icon: Workflow, color: 'cyan' },
-              { title: 'Daily Digest', desc: 'Cron → Rank → Summarize → Email', icon: Database, color: 'blue' },
-              { title: 'Failed Event Retry', desc: 'Cron → Retry → Recover → Alert', icon: Zap, color: 'amber' },
-              { title: 'Review Completion', desc: 'Webhook → CRM → Follow-up → Log', icon: ShieldCheck, color: 'emerald' },
+              { title: 'Lead Intake', desc: 'Webhook \u2192 Qualify \u2192 CRM \u2192 Log', icon: Workflow, color: 'cyan' },
+              { title: 'Daily Digest', desc: 'Cron \u2192 Rank \u2192 Summarize \u2192 Email', icon: Database, color: 'blue' },
+              { title: 'Failed Event Retry', desc: 'Cron \u2192 Retry \u2192 Recover \u2192 Alert', icon: Zap, color: 'amber' },
+              { title: 'Review Completion', desc: 'Webhook \u2192 CRM \u2192 Follow-up \u2192 Log', icon: ShieldCheck, color: 'emerald' },
             ].map((item, i) => (
               <Card key={i} variant="hover" className="p-6 space-y-3 text-center">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto`} style={{
@@ -230,7 +236,7 @@ export default function HomePage() {
       </div>
 
       <footer className="max-w-5xl mx-auto w-full pt-6 text-center text-caption" style={{ borderTopColor: 'var(--color-border-subtle)', color: 'var(--color-text-muted)' }}>
-        LeadPilot AI · AI Lead Operations & n8n Automation · Demo Mode Enabled
+        LeadPilot AI \u00b7 Lead Intelligence & Revenue Operations \u00b7 Demo Mode Enabled
       </footer>
     </div>
   );

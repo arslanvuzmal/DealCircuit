@@ -97,24 +97,6 @@ export default function IntelligenceLabPage() {
 
     const leadData = showCustomForm ? customLeadData : SCENARIOS[selectedScenario].leadData;
 
-    const steps = [
-      'Validating & normalizing input...',
-      'Checking for duplicates...',
-      'Running intelligence analysis...',
-      'Diagnosing business problems...',
-      'Extracting buying signals...',
-      'Analyzing risks & objections...',
-      'Calculating qualification scores...',
-      'Building deal strategy...',
-      'Generating follow-up...',
-      'Preparing CRM preview...',
-    ];
-
-    for (let i = 0; i < steps.length; i++) {
-      setCurrentStep(i + 1);
-      await new Promise(r => setTimeout(r, 200 + Math.random() * 200));
-    }
-
     try {
       const response = await fetch('/api/intelligence', {
         method: 'POST',
@@ -134,6 +116,7 @@ export default function IntelligenceLabPage() {
 
       const data = await response.json();
       setResult(data.intelligence);
+      setCurrentStep(10);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
     } finally {
@@ -614,15 +597,6 @@ export default function IntelligenceLabPage() {
               <Zap className="w-12 h-12 text-brand-cyan animate-pulse" />
               <h3 className="text-heading-md text-text-primary">Analyzing Lead...</h3>
               <p className="text-body-sm text-text-muted">Running intelligence pipeline</p>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <div key={i} className="w-2 h-2 rounded-full animate-pulse" style={{
-                    backgroundColor: i + 1 <= currentStep ? 'var(--color-brand-cyan)' : 'var(--color-border-subtle)',
-                    animationDelay: `${i * 100}ms`
-                  }} />
-                ))}
-              </div>
-              <p className="text-caption text-text-muted">Step {currentStep} of 10</p>
             </CardContent>
           </Card>
         )}
@@ -630,7 +604,7 @@ export default function IntelligenceLabPage() {
 
       <footer className="border-t mt-12" style={{ borderColor: 'var(--color-border-subtle)' }}>
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-caption text-text-muted">
-          LeadPilot AI · AI Lead Operations & n8n Automation · Demo Mode Enabled
+          LeadPilot AI · Lead Intelligence & Revenue Operations · Demo Mode Enabled
         </div>
       </footer>
     </div>

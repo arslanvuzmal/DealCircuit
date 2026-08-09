@@ -15,7 +15,7 @@ export default function SubmitPage() {
             <Logo size="sm" />
             <div>
               <h1 className="text-heading-lg text-text-primary tracking-tight">LeadPilot AI</h1>
-              <p className="text-caption text-text-muted">AI Lead Operations & n8n Automation</p>
+              <p className="text-caption text-text-muted">Lead Intelligence & Revenue Operations</p>
             </div>
           </div>
           <Link href="/login" className="btn-ghost btn-sm">

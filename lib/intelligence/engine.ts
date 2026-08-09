@@ -99,7 +99,8 @@ export class IntelligenceEngine {
   private checkConsistency(result: LeadIntelligenceResult, leadData: LeadIntelligenceResult['lead']): string[] {
     const issues: string[] = [];
 
-    if (leadData.budgetRange && leadData.budgetRange !== 'Under $10k (Starter)' && leadData.budgetRange !== '') {
+    // Check if budget was provided but missingInformation still lists Budget as unknown
+    if (leadData.budgetRange && leadData.budgetRange !== 'Unknown / Not supplied' && leadData.budgetRange.trim() !== '') {
       const hasBudgetMissing = result.missingInformation.some(m => m.field.toLowerCase() === 'budget');
       if (hasBudgetMissing) {
         issues.push('Budget range provided but missingInformation still lists Budget as unknown');
@@ -113,35 +114,33 @@ export class IntelligenceEngine {
       }
     }
 
-    if (leadData.desiredTimeline && leadData.desiredTimeline !== 'Exploratory') {
+    if (leadData.desiredTimeline && leadData.desiredTimeline !== 'Unknown / Not supplied' && leadData.desiredTimeline.trim() !== '') {
       const hasTimelineMissing = result.missingInformation.some(m => m.field.toLowerCase() === 'timeline');
       if (hasTimelineMissing) {
         issues.push('Timeline provided but missingInformation lists Timeline as unknown');
       }
     }
 
-    if (leadData.decisionAuthority && leadData.decisionAuthority.includes('Final Decision Maker')) {
+    if (leadData.decisionAuthority && leadData.decisionAuthority !== 'Unknown / Not supplied' && leadData.decisionAuthority.trim() !== '') {
       const hasAuthorityMissing = result.missingInformation.some(m => m.field.toLowerCase() === 'authority');
       if (hasAuthorityMissing) {
         issues.push('Decision authority provided but missingInformation lists Authority as unknown');
       }
     }
 
-    if (leadData.companyName && leadData.companyName.toLowerCase().includes('bakery')) {
+    // Check for industry-specific fixture leakage (healthcare content in non-healthcare leads)
+    const isHealthcareIndustry = leadData.industry.toLowerCase().includes('healthcare') || 
+      leadData.industry.toLowerCase().includes('medical') ||
+      leadData.industry.toLowerCase().includes('clinic') ||
+      leadData.industry.toLowerCase().includes('hospital');
+    
+    if (!isHealthcareIndustry) {
       const hasHealthcareContent = 
         result.businessDiagnosis.primaryProblem.name.toLowerCase().includes('patient') ||
         result.companyIntelligence.industry.toLowerCase().includes('healthcare') ||
         result.buyingSignals.some(s => s.signal.toLowerCase().includes('patient'));
       if (hasHealthcareContent) {
-        issues.push('Company is bakery but intelligence contains healthcare/patient references');
-      }
-    }
-
-    if (leadData.industry.toLowerCase().includes('food')) {
-      const hasHealthcareDiagnosis = result.businessDiagnosis.primaryProblem.name.toLowerCase().includes('patient') ||
-        result.companyIntelligence.industry.toLowerCase().includes('healthcare');
-      if (hasHealthcareDiagnosis) {
-        issues.push('Industry is Food & Beverage but diagnosis references healthcare');
+        issues.push('Non-healthcare lead but intelligence contains healthcare/patient references');
       }
     }
 

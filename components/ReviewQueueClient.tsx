@@ -30,17 +30,16 @@ function ReviewActions({ lead, onRefresh }: { lead: any; onRefresh: () => void }
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const handleApprove = async () => {
+      const handleApprove = async () => {
     setLoading(true); setMessage(null);
     try {
       const res = await fetch(`/api/leads/${lead.id}/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newCategory: category, newScore: Number(score), notes, followUpBody }) });
       const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Approval failed');
-      setMessage('✅ Approved! Follow-up sent via Mailpit & CRM synced (demo mode).'); onRefresh();
-    } catch (err: any) { setMessage(`❌ Error: ${err.message}`); } finally { setLoading(false); }
-  };
-  const handleReject = async () => {
+      setMessage('Recommendation approved. CRM update, follow-up prepared in Simulation Mode. No external systems modified.'); onRefresh();
+    } catch (err: any) { setMessage(`Error: ${err.message}`); } finally { setLoading(false); }
+  };  const handleReject = async () => {
     setLoading(true); setMessage(null);
-    try { const res = await fetch(`/api/leads/${lead.id}/reject`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notes }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Rejection failed'); setMessage('Lead rejected (demo mode).'); onRefresh(); } catch (err: any) { setMessage(`❌ Error: ${err.message}`); } finally { setLoading(false); }
+    try { const res = await fetch(`/api/leads/${lead.id}/reject`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notes }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Rejection failed'); setMessage('Lead rejected. No external actions taken in Simulation Mode.'); onRefresh(); } catch (err: any) { setMessage(`Error: ${err.message}`); } finally { setLoading(false); }
   };
   const handleReprocess = async () => {
     setLoading(true); setMessage(null);
