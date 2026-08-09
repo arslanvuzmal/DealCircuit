@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Logo } from './Logo';
 import { Badge } from './ui/Badge';
 import { Avatar } from './Avatar';
+import { useSidebar } from '@/app/dashboard/client-layout';
 import {
   LayoutDashboard,
   Users,
@@ -20,13 +21,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
-  X,
-  Bell,
-  Search,
-  User,
-  LogOut,
-  Moon,
-  Sun,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -35,9 +29,7 @@ export interface NavItem {
   icon: React.ReactNode;
   badge?: string | number;
   badgeVariant?: 'success' | 'warning' | 'error' | 'info' | 'neutral';
-  children?: NavItem[];
   disabled?: boolean;
-  external?: boolean;
 }
 
 const navigation: NavItem[] = [
@@ -55,11 +47,10 @@ const navigation: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, setCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
@@ -70,11 +61,10 @@ export function Sidebar() {
   };
 
   const handleItemClick = (item: NavItem) => {
-    if (item.children) return; // Parent items don't navigate
+    if (item.disabled) return;
     if (mobileOpen) setMobileOpen(false);
   };
 
-  // Overlay for mobile
   if (mobileOpen) {
     return (
       <>
@@ -85,7 +75,7 @@ export function Sidebar() {
         />
         <aside className="fixed left-0 top-0 bottom-0 z-[300] w-sidebar-expanded bg-surface-default border-r border-border-subtle animate-slide-in-right lg:hidden" role="navigation" aria-label="Main navigation">
           <div className="flex flex-col h-full">
-            renderSidebarContent()
+            {renderSidebarContent()}
           </div>
         </aside>
       </>
@@ -93,10 +83,12 @@ export function Sidebar() {
   }
 
   function renderSidebarContent() {
+    const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+
     return (
       <>
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-border-subtle">
+        <div className="flex items-center justify-between h-14 px-3 border-b border-border-subtle">
           <Logo variant="sidebar" size={collapsed ? 'sm' : 'md'} />
           {!collapsed && (
             <button
@@ -106,11 +98,11 @@ export function Sidebar() {
             >
               <ChevronLeft className="w-5 h-5 text-text-muted" />
             </button>
-            )}
+          )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1" aria-label="Main navigation">
+        <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5" aria-label="Main navigation">
           {navigation.map((item) => (
             <NavItemComponent
               key={item.href}
@@ -125,24 +117,25 @@ export function Sidebar() {
         </nav>
 
         {/* Bottom: Environment + User */}
-        <div className="border-t border-border-subtle p-4 space-y-3">
+        <div className="border-t border-border-subtle p-3 space-y-3">
           {/* Environment Badge */}
           <div className={cn('flex items-center gap-2 px-2 py-1.5', collapsed && 'justify-center')}>
-            <span className={cn(
-              'badge badge-info text-[0.625rem]',
-              collapsed && 'px-1.5'
-            )}>
-              {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? 'DEMO' : 'PROD'}
-            </span>
+            <Badge
+              variant={isDemo ? 'info' : 'success'}
+              size="xs"
+              className={cn(collapsed && 'px-1.5')}
+            >
+              {isDemo ? 'DEMO' : 'PROD'}
+            </Badge>
             {!collapsed && (
               <span className="text-caption text-text-muted truncate">
-                {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? 'Demo Mode' : 'Production'}
+                {isDemo ? 'Demo Mode' : 'Production'}
               </span>
             )}
           </div>
 
-          {/* User Menu */}
-          <div className="flex items-center gap-3 px-2 py-2">
+          {/* User */}
+          <div className="flex items-center gap-2 px-2 py-2">
             <Avatar name="Admin User" size="sm" status="online" />
             {!collapsed && (
               <div className="flex-1 min-w-0">
@@ -172,7 +165,7 @@ export function Sidebar() {
         {!collapsed && (
           <button
             onClick={() => setCollapsed(true)}
-            className="absolute -right-6 top-16 z-10 btn-ghost p-1.5 rounded-full shadow-floating hover:bg-surface-raised"
+            className="absolute -right-5 top-14 z-10 btn-ghost p-1.5 rounded-full shadow-floating hover:bg-surface-raised transition-all"
             aria-label="Collapse sidebar"
           >
             <ChevronLeft className="w-5 h-5 text-text-muted" />
@@ -184,7 +177,7 @@ export function Sidebar() {
       {collapsed && (
         <button
           onClick={() => setCollapsed(false)}
-          className="fixed left-[4rem] top-16 z-10 lg:block hidden btn-ghost p-1.5 rounded-full shadow-floating hover:bg-surface-raised"
+          className="fixed left-[4rem] top-14 z-10 lg:block hidden btn-ghost p-1.5 rounded-full shadow-floating hover:bg-surface-raised transition-all"
           aria-label="Expand sidebar"
         >
           <ChevronRight className="w-5 h-5 text-text-muted" />
@@ -193,7 +186,7 @@ export function Sidebar() {
 
       {/* Mobile Menu Button */}
       <button
-        className="lg:hidden fixed left-4 top-4 z-[350] btn-ghost p-2 rounded-md shadow-floating"
+        className="lg:hidden fixed left-3 top-3 z-[350] btn-ghost p-2 rounded-md shadow-floating"
         onClick={() => setMobileOpen(true)}
         aria-label="Open navigation menu"
       >
@@ -256,7 +249,7 @@ function NavItemComponent({
         >
           {item.icon}
           {item.badge && (
-            <Badge variant={item.badgeVariant || 'neutral'} size="sm" className="ml-1">
+            <Badge variant={item.badgeVariant || 'neutral'} size="xs" className="ml-1">
               {item.badge}
             </Badge>
           )}
@@ -264,7 +257,7 @@ function NavItemComponent({
 
         {/* Tooltip */}
         {showTooltip && (
-          <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 surface-raised border border-border-subtle rounded-md px-3 py-2 text-body-sm text-text-secondary whitespace-nowrap shadow-floating animate-slide-up z-[600]">
+          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 surface-raised border border-border-subtle rounded-md px-2.5 py-1.5 text-body-sm text-text-secondary whitespace-nowrap shadow-floating animate-slide-up z-[600]">
             {item.label}
           </div>
         )}
@@ -277,7 +270,7 @@ function NavItemComponent({
       href={item.href}
       onClick={(e) => { if (item.disabled) e.preventDefault(); else handleClick(); }}
       className={cn(
-        'flex items-center gap-3 h-10 px-3 rounded-lg transition-colors duration-120',
+        'flex items-center gap-2.5 h-10 px-3 rounded-lg transition-colors duration-120',
         isActive
           ? 'bg-surface-highlight text-brand-cyan border-l-2 border-brand-cyan'
           : 'text-text-secondary hover:text-text-primary hover:bg-surface-interactive',
@@ -289,7 +282,7 @@ function NavItemComponent({
       {item.icon}
       <span className="truncate text-nav">{item.label}</span>
       {item.badge && (
-        <Badge variant={item.badgeVariant || 'neutral'} size="sm" className="ml-auto">
+        <Badge variant={item.badgeVariant || 'neutral'} size="xs" className="ml-auto">
           {item.badge}
         </Badge>
       )}

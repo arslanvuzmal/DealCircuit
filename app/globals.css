@@ -125,6 +125,17 @@
   --shadow-floating: 0 12px 32px -6px rgb(0 0 0 / 0.24), 0 4px 16px -4px rgb(0 0 0 / 0.16);
   --shadow-focus: 0 0 0 2px #38BDF8, 0 0 0 4px #0B1220;
   --shadow-inset: inset 0 2px 4px 0 rgb(0 0 0 / 0.1);
+
+  /* ============================================================
+     SPACING / LAYOUT
+     ============================================================ */
+  --space-sidebar-collapsed: 4rem;
+  --space-sidebar-expanded: 16rem;
+  --space-topbar-height: 3.5rem;
+  --space-panel-width: 28rem;
+  --space-content-max: 72rem;
+  --space-row-compact: 2.5rem;
+  --space-row-comfortable: 3rem;
 }
 
 /* ============================================================
@@ -821,6 +832,22 @@ body {
     height: 100%;
     background-color: var(--color-border-subtle);
     margin: 0 1rem;
+  }
+
+  /* Sidebar layout utilities */
+  .sidebar-collapsed { width: var(--space-sidebar-collapsed); }
+  .sidebar-expanded { width: var(--space-sidebar-expanded); }
+  .topbar-height { height: var(--space-topbar-height); }
+  .content-max { max-width: var(--space-content-max); }
+  .panel-width { width: var(--space-panel-width); }
+
+  /* Main content margin utilities - use with sidebar state */
+  .main-content-expanded { margin-left: var(--space-sidebar-expanded); }
+  .main-content-collapsed { margin-left: var(--space-sidebar-collapsed); }
+
+  @media (min-width: 1024px) {
+    .lg\:main-content-expanded { margin-left: var(--space-sidebar-expanded); }
+    .lg\:main-content-collapsed { margin-left: var(--space-sidebar-collapsed); }
   }
 
   /* ============================================================

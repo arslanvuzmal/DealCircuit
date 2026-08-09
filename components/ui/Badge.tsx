@@ -18,7 +18,7 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
     | 'externally-verified'
     | 'unknown';
   /** Size variant */
-  size?: 'sm' | 'md';
+  size?: 'xs' | 'sm' | 'md';
   /** Show dot indicator */
   dot?: boolean;
   /** Dot color override */
@@ -40,6 +40,7 @@ const variantClasses = {
 };
 
 const sizeClasses = {
+  xs: 'px-1 py-0 text-[0.625rem] gap-0.5',
   sm: 'px-1.5 py-0.5 text-[0.6875rem] gap-1',
   md: 'px-2 py-0.5 text-caption gap-1.5',
 };

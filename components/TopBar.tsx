@@ -9,6 +9,7 @@ import { Logo } from './Logo';
 import { Avatar } from './Avatar';
 import { Button } from './ui/Button';
 import { Badge, type BadgeProps } from './ui/Badge';
+import { Input } from './ui/Input';
 import {
   Search,
   Bell,
@@ -156,7 +157,7 @@ export function TopBar() {
         <div className="flex items-center gap-1 lg:gap-2 ml-auto">
           {/* Environment Badge */}
           {isDemo && (
-            <Badge variant="info" size="sm" className="hidden sm:inline-flex mr-2">
+            <Badge variant="info" size="xs" className="hidden sm:inline-flex mr-2 px-2 py-1">
               DEMO
             </Badge>
           )}
@@ -179,7 +180,7 @@ export function TopBar() {
               aria-expanded={notificationsOpen}
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-status-error rounded-full" aria-hidden="true" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-status-error rounded-full" aria-hidden="true" />
             </button>
 
             {notificationsOpen && (
@@ -303,7 +304,7 @@ function CommandPalette({
                       <p className="text-caption text-text-muted truncate">{result.description}</p>
                     </div>
                     {result.badge && (
-                      <Badge variant={(result.badgeVariant as BadgeProps['variant']) || 'neutral'} size="sm">
+                      <Badge variant={(result.badgeVariant as BadgeProps['variant']) || 'neutral'} size="xs">
                         {result.badge}
                       </Badge>
                     )}
