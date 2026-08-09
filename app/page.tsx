@@ -1,242 +1,167 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Zap, Bot, Database, Workflow, CheckCircle2, AlertTriangle } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { ArrowRight, Zap, ShieldCheck, GitBranch, RefreshCw, Brain, Database, Search, CheckCircle2, AlertTriangle, XCircle, Clock, Edit2, Eye, FileText, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Logo } from '@/components/Logo';
 
+const DecisionPipeline = dynamic(() => import('@/components/landing/DecisionPipeline').then(mod => mod.DecisionPipeline), { ssr: false, loading: () => <div className="text-center text-text-muted py-8">Loading pipeline...</div> });
+const PipelineStepCard = dynamic(() => import('@/components/landing/PipelineStepCard').then(mod => mod.PipelineStepCard), { ssr: false });
+const HumanControlPreview = dynamic(() => import('@/components/landing/HumanControlPreview').then(mod => mod.HumanControlPreview), { ssr: false });
+const FailureRecoveryTrace = dynamic(() => import('@/components/landing/FailureRecoveryTrace').then(mod => mod.FailureRecoveryTrace), { ssr: false });
+const DemoBoundariesTable = dynamic(() => import('@/components/landing/DemoBoundariesTable').then(mod => mod.DemoBoundariesTable), { ssr: false });
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col justify-between p-6 sm:p-12 animate-fade-in" style={{ backgroundColor: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}>
-      <div className="max-w-5xl mx-auto w-full space-y-16 py-8">
-        {/* Header */}
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Logo size="md" />
-            <div>
-              <h1 className="text-heading-lg text-text-primary tracking-tight">LeadPilot AI</h1>
-              <p className="text-caption text-text-muted">Lead Intelligence & Revenue Operations</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/submit" className="btn-ghost btn-sm text-text-secondary hover:text-text-primary">
-              Public Lead Form
+    <div className="min-h-screen flex flex-col animate-fade-in" style={{ backgroundColor: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}>
+      <header className="topbar fixed left-0 right-0 top-0 z-[100] bg-surface-default/95 backdrop-blur-sm border-b border-border-subtle">
+        <div className="flex items-center h-topbar-height px-4 sm:px-6 lg:px-8 max-w-[72rem] mx-auto">
+          <Logo size="md" className="mr-8" />
+          <nav className="flex-1 flex items-center justify-end gap-6">
+            <Link href="/intelligence" className="text-body-sm text-text-secondary hover:text-text-primary transition-colors">Intelligence Lab</Link>
+            <Link href="/submit" className="text-body-sm text-text-secondary hover:text-text-primary transition-colors">Public Form</Link>
+            <span className="hidden sm:inline-flex">
+              <Badge variant="info" size="xs">DEMO</Badge>
+            </span>
+            <Link href="/login">
+              <Button size="sm" className="gap-1.5">Admin Dashboard <ArrowRight className="w-4 h-4" /></Button>
             </Link>
-            <Link href="/login" className="btn-primary btn-sm">
-              Admin Dashboard <ArrowRight className="w-4 h-4 ml-1" />
-            </Link>
-          </div>
-        </header>
-
-        {/* Hero */}
-        <div className="text-center space-y-6 max-w-3xl mx-auto pt-6">
-          <Badge variant="info" size="sm" className="flex items-center gap-2">
-            <Zap className="w-4 h-4" /> AI-Assisted Lead Qualification
-          </Badge>
-          <h2 className="text-display text-text-primary tracking-tighter leading-tight">
-            Turn Every Enquiry into a Clear Sales Action
-          </h2>
-          <p className="text-body-lg text-text-secondary leading-relaxed">
-            LeadPilot captures incoming enquiries, validates and qualifies them, routes uncertain cases for human review,
-            updates your CRM, prepares follow-ups and tracks workflow failures from one operations workspace.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <Link href="/intelligence">
-              <Button size="lg" className="gap-2">
-                <Zap className="w-4 h-4" /> Try Lead Intelligence <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-            <Link href="/submit">
-              <Button variant="secondary" size="lg">
-                Use Classic Lead Form
-              </Button>
-            </Link>
-          </div>
+          </nav>
         </div>
+      </header>
 
-        {/* Problem Section */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3">
-            <h3 className="text-section-title text-text-primary">The Problem</h3>
-            <p className="text-body text-text-secondary max-w-2xl mx-auto">Capturing a lead is easy. Processing it is where teams lose time.</p>
+      <main className="flex-1 pt-topbar-height">
+        <section className="relative max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
+          <div className="absolute inset-0 -z-10" aria-hidden="true">
+            <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-brand-cyan-dim rounded-full blur-[12rem] opacity-30" />
+            <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-brand-blue/10 rounded-full blur-[10rem] opacity-20" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: Bot, title: 'Manual Review', desc: 'Every lead read by hand', color: 'cyan' },
-              { icon: ShieldCheck, title: 'Duplicate Checking', desc: 'Same lead enters twice', color: 'blue' },
-              { icon: Database, title: 'Inconsistent Scoring', desc: 'No standard criteria', color: 'amber' },
-              { icon: Zap, title: 'Delayed Response', desc: 'Hours before follow-up', color: 'emerald' },
-              { icon: Workflow, title: 'Manual CRM Entry', desc: 'Copy-paste errors', color: 'coral' },
-              { icon: Bot, title: 'Forgotten Handoffs', desc: 'Sales never notified', color: 'blue' },
-              { icon: AlertTriangle, title: 'Failed Automations', desc: 'Silent workflow stops', color: 'amber' },
-              { icon: CheckCircle2, title: 'No Audit Trail', desc: 'What happened when?', color: 'emerald' },
-            ].map((item, i) => (
-              <Card key={i} variant="hover" className="p-6 space-y-3 text-center">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto`} style={{
-                  backgroundColor: `var(--color-brand-${item.color}-dim)`,
-                  color: `var(--color-brand-${item.color}-light)`
-                }}>
-                  <item.icon className="w-5 h-5" />
+
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            <div className="space-y-8 text-center lg:text-left">
+              <Badge variant="info" size="sm" className="inline-flex items-center gap-2 mx-auto lg:mx-0">
+                <Zap className="w-3.5 h-3.5" />
+                <span>AI-Assisted Lead Qualification</span>
+              </Badge>
+
+              <h1 className="text-display text-text-primary tracking-tighter leading-tight max-w-xl mx-auto lg:mx-0">
+                Turn Every Enquiry into a Clear Sales Action
+              </h1>
+
+              <p className="text-body-lg text-text-secondary leading-relaxed max-w-xl mx-auto lg:mx-0">
+                LeadPilot captures incoming enquiries, validates and qualifies them, routes uncertain cases for human review,
+                updates your CRM, prepares follow-ups and tracks workflow failures from one operations workspace.
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center gap-4 lg:justify-start pt-4">
+                <Link href="/intelligence">
+                  <Button size="lg" className="gap-2">
+                    <Zap className="w-4 h-4" />
+                    Try Lead Intelligence
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+                <Link href="/submit">
+                  <Button variant="secondary" size="lg">
+                    Use Classic Lead Form
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-6 lg:justify-start pt-8 border-t border-border-subtle" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                <div className="flex items-center gap-2 text-body-sm text-text-muted">
+                  <ShieldCheck className="w-4 h-4 text-status-success" />
+                  <span>Human-in-the-loop</span>
                 </div>
-                <h4 className="font-semibold text-text-primary">{item.title}</h4>
-                <p className="text-body-sm text-text-muted">{item.desc}</p>
-              </Card>
-            ))}
+                <div className="flex items-center gap-2 text-body-sm text-text-muted">
+                  <GitBranch className="w-4 h-4 text-status-info" />
+                  <span>Full audit trail</span>
+                </div>
+                <div className="flex items-center gap-2 text-body-sm text-text-muted">
+                  <RefreshCw className="w-4 h-4 text-status-warning" />
+                  <span>Auto-recovery</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <Suspense fallback={<div className="text-center text-text-muted py-8">Loading pipeline...</div>}>
+                <DecisionPipeline />
+              </Suspense>
+            </div>
           </div>
         </section>
 
-        {/* Solution Section */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3 mb-8">
-            <h3 className="text-section-title text-text-primary">The Solution</h3>
-            <p className="text-body text-text-secondary max-w-2xl mx-auto">End-to-end lead operations with human control at every decision point.
+        <section className="max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 border-y border-border-subtle" style={{ borderColor: 'var(--color-border-subtle)' }}>
+          <div className="text-center space-y-4 mb-12">
+            <Badge variant="neutral" size="sm" className="inline-flex items-center gap-2">
+              <GitBranch className="w-3.5 h-3.5" />
+              <span>How It Works</span>
+            </Badge>
+            <h2 className="text-section-title text-text-primary">Decision Pipeline</h2>
+            <p className="text-body text-text-secondary max-w-2xl mx-auto">
+              Every lead flows through a deterministic pipeline. AI assists. People decide.
             </p>
           </div>
-          <Card variant="padded" className="space-y-4">
-            <div className="flex flex-wrap items-center justify-center gap-2 text-body-sm font-medium">
-              <Badge variant="info" className="gap-1.5">Capture <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="info" className="gap-1.5">Validate <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="info" className="gap-1.5">Deduplicate <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="info" className="gap-1.5">Qualify <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="warning" className="gap-1.5">Review <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="success" className="gap-1.5">CRM <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="success" className="gap-1.5">Follow-up <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="success" className="gap-1.5">Notify <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="neutral" className="gap-1.5" style={{ backgroundColor: 'var(--color-brand-cyan-dim)', color: 'var(--color-brand-cyan-light)' }}>Audit</Badge>
+
+          <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-5 gap-4"><div className="p-4 border border-border-subtle rounded-lg animate-pulse" /><div className="p-4 border border-border-subtle rounded-lg animate-pulse" /><div className="p-4 border border-border-subtle rounded-lg animate-pulse" /><div className="p-4 border border-border-subtle rounded-lg animate-pulse" /><div className="p-4 border border-border-subtle rounded-lg animate-pulse" /></div>}>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+              <PipelineStepCard step={1} label="Capture" icon={<Database className="w-5 h-5" />} desc="Web form, webhook, or API ingest" color="brand-blue" detail="Validates schema, sanitizes input, generates idempotency key" />
+              <PipelineStepCard step={2} label="Deduplicate" icon={<Search className="w-5 h-5" />} desc="Fuzzy match on email, domain, company" color="brand-cyan" detail="Confidence score. Auto-merge or route to review queue" />
+              <PipelineStepCard step={3} label="Qualify" icon={<Brain className="w-5 h-5" />} desc="AI scoring + scenario evaluation" color="brand-cyan" detail="Industry, size, complexity, systems, budget signals" />
+              <PipelineStepCard step={4} label="Route" icon={<GitBranch className="w-5 h-5" />} desc="Auto-approve or human review" color="amber" detail="Low confidence to Review Queue. High confidence to CRM" />
+              <PipelineStepCard step={5} label="Execute" icon={<CheckCircle2 className="w-5 h-5" />} desc="CRM write, follow-up, notify, log" color="emerald" detail="Idempotent writes. Retry on failure. Full audit entry" isLast />
             </div>
-          </Card>
+          </Suspense>
         </section>
 
-        {/* Before/After */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3">
-            <h3 className="text-section-title text-text-primary">Before vs After</h3>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card variant="padded" className="space-y-4">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-status-error">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--color-status-error)' }} />
-                  Before LeadPilot
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-body-sm font-mono text-text-secondary">
-                <div>Lead Form \u2192 Inbox</div>
-                <ArrowRight className="mx-auto text-text-muted" />
-                <div>Spreadsheet</div>
-                <ArrowRight className="mx-auto text-text-muted" />
-                <div>Salesperson</div>
-                <ArrowRight className="mx-auto text-text-muted" />
-                <div>CRM (manual)</div>
-                <ArrowRight className="mx-auto text-text-muted" />
-                <div>Manual Email</div>
-              </CardContent>
-            </Card>
-            <Card variant="padded" className="space-y-4">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-status-success">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--color-status-success)' }} />
-                  After LeadPilot
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-body-sm font-mono text-text-secondary">
-                <div>Lead Source</div>
-                <ArrowRight className="mx-auto text-text-muted" />
-                <div>LeadPilot AI</div>
-                <ArrowRight className="mx-auto text-text-muted" />
-                <div>Workflow Engine</div>
-                <ArrowRight className="mx-auto text-text-muted" />
-                <div>CRM + Follow-up + Team</div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
 
-        {/* Workflow Automation Section */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3 mb-8">
-            <h3 className="text-section-title text-text-primary">Workflow Automation</h3>
-            <p className="text-body text-text-secondary max-w-2xl mx-auto">Four production workflows handle the operational heavy lifting.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { title: 'Lead Intake', desc: 'Webhook \u2192 Qualify \u2192 CRM \u2192 Log', icon: Workflow, color: 'cyan' },
-              { title: 'Daily Digest', desc: 'Cron \u2192 Rank \u2192 Summarize \u2192 Email', icon: Database, color: 'blue' },
-              { title: 'Failed Event Retry', desc: 'Cron \u2192 Retry \u2192 Recover \u2192 Alert', icon: Zap, color: 'amber' },
-              { title: 'Review Completion', desc: 'Webhook \u2192 CRM \u2192 Follow-up \u2192 Log', icon: ShieldCheck, color: 'emerald' },
-            ].map((item, i) => (
-              <Card key={i} variant="hover" className="p-6 space-y-3 text-center">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto`} style={{
-                  backgroundColor: `var(--color-brand-${item.color}-dim)`,
-                  color: `var(--color-brand-${item.color}-light)`
-                }}>
-                  <item.icon className="w-5 h-5" />
-                </div>
-                <h4 className="font-semibold text-text-primary">{item.title}</h4>
-                <p className="text-body-sm text-text-muted">{item.desc}</p>
-              </Card>
-            ))}
-          </div>
-        </section>
+        <Suspense fallback={<section className="max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 bg-surface-secondary/50" style={{ backgroundColor: 'var(--color-background-secondary)' }}><div className="grid lg:grid-cols-2 gap-6"><div className="p-6 border border-border-subtle rounded-lg animate-pulse" /><div className="p-6 border border-border-subtle rounded-lg animate-pulse" /></div></section>}>
+          <HumanControlPreview />
+        </Suspense>
 
-        {/* Human Control */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3">
-            <h3 className="text-section-title text-text-primary">Human Control</h3>
-            <p className="text-body text-text-secondary max-w-2xl mx-auto">AI supports qualification. People remain in control of uncertain or sensitive actions.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { title: 'Review Queue', desc: 'Low confidence, duplicates, prompt injection attempts routed for human review' },
-              { title: 'Edit & Approve', desc: 'Reviewers adjust scores, edit follow-ups, change categories before dispatch' },
-              { title: 'Audit Trail', desc: 'Every decision logged with reviewer, timestamp, and reasoning' },
-            ].map((item, i) => (
-              <Card key={i} variant="hover" className="p-6 space-y-3">
-                <h4 className="font-semibold text-text-primary">{item.title}</h4>
-                <p className="text-body-sm text-text-muted">{item.desc}</p>
-              </Card>
-            ))}
-          </div>
-        </section>
+        <Suspense fallback={<section className="max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24"><div className="p-6 border border-border-subtle rounded-lg animate-pulse" /></section>}>
+          <FailureRecoveryTrace />
+        </Suspense>
 
-        {/* Failure Recovery */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3 mb-8">
-            <h3 className="text-section-title text-text-primary">Failure Recovery</h3>
-            <p className="text-body text-text-secondary max-w-2xl mx-auto">A mature automation does not silently stop when an API fails.</p>
-          </div>
-          <Card variant="padded" className="space-y-4">
-            <div className="flex flex-wrap items-center justify-center gap-2 text-body-sm font-medium">
-              <Badge variant="error" className="gap-1.5">Failure <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="warning" className="gap-1.5">Retry <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="info" className="gap-1.5">Recovery <ArrowRight className="w-3 h-3" /></Badge>
-              <Badge variant="neutral" className="gap-1.5" style={{ backgroundColor: 'var(--color-brand-cyan-dim)', color: 'var(--color-brand-cyan-light)' }}>Audit</Badge>
+        <Suspense fallback={<section className="max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 bg-surface-secondary/50" style={{ backgroundColor: 'var(--color-background-secondary)' }}><div className="p-6 border border-border-subtle rounded-lg animate-pulse" /></section>}>
+          <DemoBoundariesTable />
+        </Suspense>
+
+        <section className="max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <h2 className="text-section-title text-text-primary">Ready to automate your lead operations?</h2>
+            <p className="text-body-lg text-text-secondary">
+              Try the Intelligence Lab with your own data, or deploy LeadPilot in your infrastructure.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <Link href="/intelligence">
+                <Button size="lg" className="gap-2">
+                  <Zap className="w-4 h-4" />
+                  Try Lead Intelligence
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link href="/submit">
+                <Button variant="secondary" size="lg">
+                  Use Classic Lead Form
+                </Button>
+              </Link>
+              <a href="https://github.com/arslanvuzmal/lead-pilot-ai" target="_blank" rel="noopener noreferrer" className="btn-ghost btn-lg gap-2">
+                <ExternalLink className="w-4 h-4" />
+                View Source on GitHub
+              </a>
             </div>
-            <p className="text-body-sm text-text-muted text-center">Exponential backoff, retryable vs permanent classification, bounded attempts, full audit trail</p>
-          </Card>
-        </section>
-
-        {/* Final CTA */}
-        <div className="text-center space-y-4 pt-8 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
-          <h3 className="text-heading-lg text-text-primary">Ready to automate your lead operations?</h3>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/intelligence">
-              <Button size="lg" className="gap-2">
-                <Zap className="w-4 h-4" /> Try Lead Intelligence
-              </Button>
-            </Link>
-            <Link href="/submit">
-              <Button variant="secondary" size="lg">
-                Use Classic Lead Form
-              </Button>
-            </Link>
           </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-border-subtle py-6" style={{ borderColor: 'var(--color-border-subtle)' }}>
+        <div className="max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8 text-center text-caption text-text-muted">
+          LeadPilot AI \u00b7 Lead Intelligence & Revenue Operations
+          <span className="mx-2">\u00b7</span> <Badge variant="info" size="xs">Demo Mode Enabled</Badge>
         </div>
-      </div>
-
-      <footer className="max-w-5xl mx-auto w-full pt-6 text-center text-caption" style={{ borderTopColor: 'var(--color-border-subtle)', color: 'var(--color-text-muted)' }}>
-        LeadPilot AI \u00b7 Lead Intelligence & Revenue Operations \u00b7 Demo Mode Enabled
       </footer>
     </div>
   );
