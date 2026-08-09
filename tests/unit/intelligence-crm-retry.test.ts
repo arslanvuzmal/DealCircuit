@@ -4,6 +4,8 @@ import { SCENARIOS } from '@/lib/scenarios';
 import { syncLeadToCRM, retryCRMSync } from '@/lib/crm/adapter';
 import { prisma } from '@/lib/db';
 
+const hasDatabase = !!process.env.DATABASE_URL;
+
 describe('CRM Failure Retry & Idempotency', () => {
   let engine: IntelligenceEngine;
 
@@ -14,7 +16,6 @@ describe('CRM Failure Retry & Idempotency', () => {
   it('should simulate CRM failure and retry with same idempotency key', async () => {
     const result = await engine.analyzeLead(SCENARIOS.crm_failure.leadData as any, 'crm_failure');
 
-    // Check workflow shows failure and retry
     const workflow = result.businessDiagnosis.workflow;
     expect(workflow).toContain('CRM Sync Attempt 1 → 503 Service Unavailable');
     expect(workflow).toContain('Retry Scheduled (Exponential Backoff)');
@@ -46,12 +47,11 @@ describe('CRM Failure Retry & Idempotency', () => {
     expect(result.followupDraft.body).toContain('Exactly one logical CRM record created');
   });
 
-  // Test the CRM adapter directly with failure injection
-  describe('CRM Adapter Failure Injection', () => {
+  // Test the CRM adapter directly with failure injection (requires database)
+  describe.skipIf(!hasDatabase)('CRM Adapter Failure Injection', () => {
     let testLeadId: string;
 
     beforeAll(async () => {
-      // Create a test lead first
       const lead = await prisma.lead.create({
         data: {
           fullName: 'Test User',
@@ -78,7 +78,6 @@ describe('CRM Failure Retry & Idempotency', () => {
     });
 
     afterAll(async () => {
-      // Clean up
       await prisma.integrationEvent.deleteMany({ where: { leadId: testLeadId } });
       await prisma.lead.delete({ where: { id: testLeadId } });
     });
@@ -95,13 +94,11 @@ describe('CRM Failure Retry & Idempotency', () => {
         totalScore: 82,
       };
 
-      // First attempt - should fail
-      const firstResult = await syncLeadToCRM(payload, true); // forceSimulateFailure = true
+      const firstResult = await syncLeadToCRM(payload, true);
       expect(firstResult.success).toBe(false);
       expect(firstResult.error).toContain('504');
       expect(firstResult.classification).toBe('RETRYABLE');
 
-      // Check integration event was logged
       const integrationEvent = await prisma.integrationEvent.findFirst({
         where: { leadId: testLeadId, status: 'FAILED' },
         orderBy: { createdAt: 'desc' },
@@ -109,16 +106,14 @@ describe('CRM Failure Retry & Idempotency', () => {
       expect(integrationEvent).toBeDefined();
       expect(integrationEvent!.attempts).toBe(1);
 
-      // Retry with same idempotency context - should succeed
       const retryResult = await retryCRMSync(payload, 2);
       expect(retryResult.success).toBe(true);
       expect(retryResult.externalId).toBeDefined();
 
-      // Verify only one logical record (no duplicates)
       const successEvents = await prisma.integrationEvent.findMany({
         where: { leadId: testLeadId, status: 'SUCCESS' },
       });
-      expect(successEvents.length).toBe(1); // Exactly one success
+      expect(successEvents.length).toBe(1);
     });
   });
 });
