@@ -11,7 +11,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background-primary text-text-primary flex">
+    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}>
       {/* Sidebar */}
       <Sidebar />
 
