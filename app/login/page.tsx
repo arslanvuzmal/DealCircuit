@@ -3,6 +3,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Logo } from '@/components/Logo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,69 +43,84 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center p-4">
-      <div className="bg-white border border-gray-200 rounded-xl p-8 max-w-md w-full shadow-card space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white text-xl mx-auto shadow-lg">
-            LP
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Admin Console Login</h1>
-          <p className="text-xs text-gray-500">Sign in to access LeadPilot AI administration and review queue</p>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 text-red-600 text-xs">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center p-4 animate-fade-in" style={{ backgroundColor: 'var(--color-background-primary)' }}>
+      <Card variant="hover" className="w-full max-w-md space-y-6">
+        <CardHeader className="text-center space-y-2">
+          <Logo className="mx-auto" size="lg" />
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Email Address</label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input pl-9"
-              />
+            <h1 className="text-page-title text-text-primary tracking-tight">Admin Console</h1>
+            <p className="text-body-sm text-text-muted">Sign in to access LeadPilot AI operations workspace</p>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {error && (
+            <div className="p-3 rounded-lg border border-border-error bg-status-error-bg text-status-error-text text-caption flex items-center gap-2 animate-slide-up">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
             </div>
-          </div>
+          )}
 
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Password</label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input pl-9"
-              />
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="label">Email Address</label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@leadpilot.ai"
+                  className="pl-10"
+                  autoComplete="email"
+                />
+              </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4" /></>}
-          </button>
-        </form>
+            <div className="space-y-2">
+              <label htmlFor="password" className="label">Password</label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="pl-10"
+                  autoComplete="current-password"
+                />
+              </div>
+            </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs space-y-1 text-gray-500">
-          <div className="font-semibold text-gray-900 flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-green-600" /> Seeded Demo Credentials:
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
+                  Signing in…
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="w-4 h-4 ml-2" aria-hidden="true" />
+                </>
+              )}
+            </Button>
+          </form>
+
+          <div className="p-3 rounded-lg border border-border-subtle bg-surface-interactive text-caption space-y-1 text-text-secondary">
+            <div className="font-semibold text-text-primary flex items-center justify-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-status-success" aria-hidden="true" />
+              Demo Credentials
+            </div>
+            <div>Admin: <code className="text-brand-cyan">admin@leadpilot.ai</code> / <code className="text-text-primary">admin123</code></div>
+            <div>Reviewer: <code className="text-brand-cyan">reviewer@leadpilot.ai</code> / <code className="text-text-primary">admin123</code></div>
           </div>
-          <div>Admin: <code className="text-blue-600">admin@leadpilot.ai</code> / <code className="text-gray-900">admin123</code></div>
-          <div>Reviewer: <code className="text-blue-600">reviewer@leadpilot.ai</code> / <code className="text-gray-900">admin123</code></div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
