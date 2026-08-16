@@ -2,7 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'LeadPilot AI - AI Lead Operations & n8n Automation',
+  title: 'DealCircuit - AI Lead Operations & n8n Automation',
   description: 'Automated lead capture, 5-criteria qualification scoring, AI safety defense, and n8n workflow automation platform.',
 };
 

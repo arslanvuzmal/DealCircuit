@@ -1,5 +1,5 @@
 /**
- * LeadPilot Design Tokens — Spacing System
+ * DealCircuit Design Tokens — Spacing System
  *
  * Based on a 4px base unit. All values in rem.
  * Use these tokens via Tailwind config or directly in components.

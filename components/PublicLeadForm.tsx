@@ -72,7 +72,7 @@ export default function PublicLeadForm() {
         </div>
         <h2 className="text-2xl font-bold text-dark-bright">Inquiry Received & Processed!</h2>
         <p className="text-dark-muted max-w-lg mx-auto">
-          Thank you, <span className="text-dark-bright font-semibold">{formData.fullName}</span>. Your submission has been securely ingested and evaluated by LeadPilot AI.
+          Thank you, <span className="text-dark-bright font-semibold">{formData.fullName}</span>. Your submission has been securely ingested and evaluated by DealCircuit.
         </p>
 
         <div className="grid grid-cols-2 gap-4 max-w-md mx-auto text-left bg-dark-bg/60 p-4 rounded-lg border border-dark-border text-sm">
@@ -295,7 +295,7 @@ export default function PublicLeadForm() {
           className="w-4 h-4 accent-brand-cyan rounded bg-dark-bg border-dark-border"
         />
         <label htmlFor="consent" className="text-xs text-dark-muted">
-          I consent to LeadPilot AI processing my project requirements and generating automated follow-up communications.
+          I consent to DealCircuit processing my project requirements and generating automated follow-up communications.
         </label>
       </div>
 
@@ -310,7 +310,7 @@ export default function PublicLeadForm() {
           </>
         ) : (
           <>
-            <Send className="w-4 h-4" /> Submit Inquiry & Trigger LeadPilot AI
+            <Send className="w-4 h-4" /> Submit Inquiry & Trigger DealCircuit
           </>
         )}
       </button>

@@ -1,5 +1,5 @@
 /**
- * LeadPilot Design Tokens — Shadow System
+ * DealCircuit Design Tokens — Shadow System
  *
  * Low-noise, layered shadows for depth without heaviness.
  * All values as CSS box-shadow strings.

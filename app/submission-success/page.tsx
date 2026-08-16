@@ -13,7 +13,7 @@ export default function SubmissionSuccessPage() {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Lead Inquiry Submitted!</h1>
           <p className="text-xs text-gray-500">
-            Your project requirements have been ingested, normalized, and evaluated by LeadPilot AI.
+            Your project requirements have been ingested, normalized, and evaluated by DealCircuit.
           </p>
         </div>
 

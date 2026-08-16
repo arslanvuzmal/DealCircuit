@@ -52,7 +52,7 @@ export default function SettingsClient() {
             <CardHeader><CardTitle className="flex items-center gap-2"><Settings className="w-5 h-5 text-brand-blue" /> Workspace Identity</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2"><label className="text-body-sm font-medium text-text-secondary">Workspace Name</label><Input value="LeadPilot AI" onChange={() => {}} placeholder="LeadPilot AI" /></div>
+                <div className="space-y-2"><label className="text-body-sm font-medium text-text-secondary">Workspace Name</label><Input value="DealCircuit" onChange={() => {}} placeholder="DealCircuit" /></div>
                 <div className="space-y-2"><label className="text-body-sm font-medium text-text-secondary">Workspace Slug</label><Input value="leadpilot-ai" onChange={() => {}} placeholder="leadpilot-ai" /></div>
               </div>
             </CardContent>

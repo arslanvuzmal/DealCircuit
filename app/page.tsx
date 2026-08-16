@@ -50,7 +50,7 @@ export default function HomePage() {
               </h1>
 
               <p className="text-body-lg text-text-secondary leading-relaxed max-w-xl mx-auto lg:mx-0">
-                LeadPilot captures incoming enquiries, validates and qualifies them, routes uncertain cases for human review,
+                DealCircuit captures incoming enquiries, validates and qualifies them, routes uncertain cases for human review,
                 updates your CRM, prepares follow-ups and tracks workflow failures from one operations workspace.
               </p>
 
@@ -133,7 +133,7 @@ export default function HomePage() {
           <div className="max-w-3xl mx-auto space-y-6">
             <h2 className="text-section-title text-text-primary">Ready to automate your lead operations?</h2>
             <p className="text-body-lg text-text-secondary">
-              Try the Intelligence Lab with your own data, or deploy LeadPilot in your infrastructure.
+              Try the Intelligence Lab with your own data, or deploy DealCircuit in your infrastructure.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Link href="/intelligence">
@@ -159,7 +159,7 @@ export default function HomePage() {
 
       <footer className="border-t border-border-subtle py-6" style={{ borderColor: 'var(--color-border-subtle)' }}>
         <div className="max-w-[72rem] mx-auto px-4 sm:px-6 lg:px-8 text-center text-caption text-text-muted">
-          LeadPilot AI \u00b7 Lead Intelligence & Revenue Operations
+          DealCircuit \u00b7 Lead Intelligence & Revenue Operations
           <span className="mx-2">\u00b7</span> <Badge variant="info" size="xs">Demo Mode Enabled</Badge>
         </div>
       </footer>

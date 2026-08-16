@@ -35,7 +35,7 @@ const architectureStages = [
     color: "text-brand-purple",
     border: "border-brand-purple/30",
     bg: "bg-brand-purple/10",
-    title: "LeadPilot Core",
+    title: "DealCircuit Core",
     items: ["Validation & scoring engine", "PostgreSQL persistence", "Admin dashboard"],
   },
   {

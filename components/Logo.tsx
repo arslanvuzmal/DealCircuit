@@ -17,8 +17,8 @@ export interface LogoProps {
 }
 
 /**
- * LeadPilot Logo Component
- * 
+ * DealCircuit Logo Component
+ *
  * Animated logo representing data flow, lead routing, and intelligence.
  * Uses CSS animations for the SVG elements and Framer Motion for text if needed.
  * Respects prefers-reduced-motion.
@@ -65,7 +65,7 @@ export function Logo({
         className
       )}
       style={{ gap: config.gap }}
-      aria-label="LeadPilot AI"
+      aria-label="DealCircuit"
       disabled={!onClick}
     >
       <svg
@@ -193,25 +193,14 @@ export function Logo({
       </svg>
 
       {showText && (
-        <>
-          <span className={cn(
-            'font-bold text-text-primary',
-            config.text,
-            variant === 'login' && 'text-lg',
-            variant === 'marketing' && 'text-xl'
-          )}>
-            LeadPilot
-          </span>
-          {variant !== 'sidebar' && (
-            <span className={cn(
-              'font-medium text-text-muted',
-              variant === 'login' && 'text-sm',
-              variant === 'marketing' && 'text-base'
-            )}>
-              AI
-            </span>
-          )}
-        </>
+        <span className={cn(
+          'font-bold text-text-primary',
+          config.text,
+          variant === 'login' && 'text-lg',
+          variant === 'marketing' && 'text-xl'
+        )}>
+          DealCircuit
+        </span>
       )}
     </button>
   );

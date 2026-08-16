@@ -14,7 +14,7 @@ export default function SubmitPage() {
           <div className="flex items-center gap-3">
             <Logo size="sm" />
             <div>
-              <h1 className="text-heading-lg text-text-primary tracking-tight">LeadPilot AI</h1>
+              <h1 className="text-heading-lg text-text-primary tracking-tight">DealCircuit</h1>
               <p className="text-caption text-text-muted">Lead Intelligence & Revenue Operations</p>
             </div>
           </div>
@@ -31,7 +31,7 @@ export default function SubmitPage() {
             Turn Every Enquiry into Actionable Sales Intelligence
           </h2>
           <p className="text-body text-text-secondary max-w-2xl mx-auto">
-            LeadPilot doesn&apos;t just score leads—it diagnoses business problems, extracts buying signals,
+            DealCircuit doesn&apos;t just score leads—it diagnoses business problems, extracts buying signals,
             identifies risks, and recommends the exact next sales action with full audit traceability.
           </p>
         </div>

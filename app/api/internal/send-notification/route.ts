@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const { title, message, subject, htmlBody, type } = body;
 
     await createInAppNotification({
-      title: title || subject || 'LeadPilot Notification',
+      title: title || subject || 'DealCircuit Notification',
       message: message || 'System digest update',
       type: type || 'SYSTEM',
     });

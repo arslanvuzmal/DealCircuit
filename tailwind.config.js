@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-// LeadPilot Design System — Tailwind Configuration
+// DealCircuit Design System — Tailwind Configuration
 // Imports design tokens from lib/design-tokens for single source of truth.
 
 const { colors, spacing, fontFamily, fontWeight, lineHeight, letterSpacing, typeScale, shadows, radius, borderRadius, transitionDuration, transitionEasing } = require('./lib/design-tokens/tailwind-tokens');

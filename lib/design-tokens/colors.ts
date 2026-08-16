@@ -1,5 +1,5 @@
 /**
- * LeadPilot Design Tokens — Color System
+ * DealCircuit Design Tokens — Color System
  *
  * Enterprise SaaS palette:
  * - Deep navy backgrounds (primary app surface)

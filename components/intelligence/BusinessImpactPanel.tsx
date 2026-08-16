@@ -47,7 +47,7 @@ export default function BusinessImpactPanel({ data }: BusinessImpactPanelProps) 
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Zap className="w-5 h-5 text-blue-600" />
-            <span className="font-semibold text-gray-900">LeadPilot Analysis</span>
+            <span className="font-semibold text-gray-900">DealCircuit Analysis</span>
           </div>
           <div className="text-3xl font-bold text-blue-600">{data.leadPilotAutomatedSeconds}</div>
           <div className="text-xs text-gray-500">seconds (automated qualification)</div>

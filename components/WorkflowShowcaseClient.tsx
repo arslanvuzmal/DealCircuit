@@ -51,12 +51,12 @@ const workflowShowcases: Record<string, WorkflowShowcase> = {
     tags: ["Nurture", "Email", "Branching"],
     liveUrl: "https://cloud.n8n.io/workflows/abc123",
     businessNarrative: [
-      "This workflow automates the entire post-approval nurture journey for qualified leads. Once a lead is approved in LeadPilot, they enter a 6-week email sequence designed to build trust, demonstrate value, and drive toward a sales conversation.",
+      "This workflow automates the entire post-approval nurture journey for qualified leads. Once a lead is approved in DealCircuit, they enter a 6-week email sequence designed to build trust, demonstrate value, and drive toward a sales conversation.",
       "The sequence adapts dynamically based on engagement signals: opens, clicks, replies, and website visits. Highly engaged leads are fast-tracked to sales outreach; disengaged leads receive re-engagement attempts before being moved to a long-term nurture list.",
       "Each email template is personalized using lead enrichment data (company name, role, tech stack, funding stage). The workflow tracks all interactions in a centralized engagement log, providing sales with a complete picture before first contact.",
     ],
     pipeline: [
-      { type: "step", step: { title: "Lead Approved Trigger", description: "Webhook fires when lead status changes to APPROVED in LeadPilot", color: "cyan" } },
+      { type: "step", step: { title: "Lead Approved Trigger", description: "Webhook fires when lead status changes to APPROVED in DealCircuit", color: "cyan" } },
       { type: "step", step: { title: "Enrichment & Segmentation", description: "Fetch additional firmographic data; assign to industry-specific track", color: "purple" } },
       { type: "step", step: { title: "Week 1: Introduction Email", description: "Personalized intro with case study relevant to their industry", color: "emerald" } },
       { type: "parallel", title: "ENGAGEMENT BRANCH", paths: [
@@ -75,7 +75,7 @@ const workflowShowcases: Record<string, WorkflowShowcase> = {
     ],
     technicalHighlights: [
       "47 nodes including HTTP Request, IF, Switch, Merge, Wait, and Set nodes",
-      "Uses n8n's built-in webhook authentication for secure LeadPilot integration",
+      "Uses n8n's built-in webhook authentication for secure DealCircuit integration",
       "Engagement tracking via Mailpit webhook callbacks (open/click pixels)",
       "CRM task creation via HubSpot API with custom properties for sequence tracking",
       "Exponential backoff wait nodes (1h, 4h, 12h, 24h) for API rate limit handling",
@@ -91,7 +91,7 @@ const workflowShowcases: Record<string, WorkflowShowcase> = {
     tags: ["Error Handling", "Retry", "Monitoring"],
     liveUrl: "https://cloud.n8n.io/workflows/def456",
     businessNarrative: [
-      "CRM synchronization is the most critical integration in LeadPilot. When it fails, leads don't reach sales, and revenue is impacted. This workflow wraps every CRM sync operation in a resilient error-handling layer that automatically retries, escalates, and alerts.",
+      "CRM synchronization is the most critical integration in DealCircuit. When it fails, leads don't reach sales, and revenue is impacted. This workflow wraps every CRM sync operation in a resilient error-handling layer that automatically retries, escalates, and alerts.",
       "The pattern implements: immediate retry (network blip), exponential backoff (1m, 5m, 15m, 1h), dead-letter queue for permanent failures, and Slack/email alerting for human intervention.",
       "All failures are logged to the Audit Trail with full context (payload, error, retry count), enabling rapid root-cause analysis and replay capability.",
     ],
@@ -134,7 +134,7 @@ const workflowShowcases: Record<string, WorkflowShowcase> = {
     liveUrl: undefined,
     file: "parallel-scoring.json",
     businessNarrative: [
-      "Lead scoring is the brain of LeadPilot. This workflow executes all 5 scoring criteria simultaneously, dramatically reducing latency compared to sequential evaluation. Results are aggregated in real-time and the lead is routed to HOT, WARM, or REVIEW tier instantly.",
+      "Lead scoring is the brain of DealCircuit. This workflow executes all 5 scoring criteria simultaneously, dramatically reducing latency compared to sequential evaluation. Results are aggregated in real-time and the lead is routed to HOT, WARM, or REVIEW tier instantly.",
       "Parallel execution means a lead that would take 2-3 seconds sequentially now completes in ~400ms. The workflow uses n8n's parallel branching with a Merge node to wait for all criteria to complete before calculating the final score.",
       "Each criterion is a self-contained sub-workflow, making it easy to add, remove, or modify scoring rules without touching the orchestration logic.",
     ],

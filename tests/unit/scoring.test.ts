@@ -4,7 +4,7 @@ import { normalizeLeadData } from '@/lib/validation/lead';
 import { detectPromptInjection } from '@/lib/scoring/injection';
 import { generateFollowUpDraft } from '@/lib/email/followup';
 
-describe('LeadPilot AI Unit Tests', () => {
+describe('DealCircuit Unit Tests', () => {
   it('should normalize email, phone, and company website', () => {
     const rawInput = {
       fullName: '  Jane Doe ',

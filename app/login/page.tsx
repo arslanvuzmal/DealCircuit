@@ -49,7 +49,7 @@ export default function LoginPage() {
           <Logo className="mx-auto" size="lg" />
           <div>
             <h1 className="text-page-title text-text-primary tracking-tight">Admin Console</h1>
-            <p className="text-body-sm text-text-muted">Sign in to access LeadPilot AI operations workspace</p>
+            <p className="text-body-sm text-text-muted">Sign in to access DealCircuit operations workspace</p>
           </div>
         </CardHeader>
 

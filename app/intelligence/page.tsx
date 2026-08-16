@@ -189,7 +189,7 @@ export default function IntelligenceLabPage() {
             <div className="flex items-center gap-3">
               <Logo size="sm" />
               <div>
-                <h1 className="text-heading-lg text-text-primary">LeadPilot AI</h1>
+                <h1 className="text-heading-lg text-text-primary">DealCircuit</h1>
                 <p className="text-caption text-text-muted">Lead Intelligence Lab</p>
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function IntelligenceLabPage() {
               </h2>
               <p className="text-body-lg text-text-secondary max-w-2xl mx-auto">
                 Turn a raw enquiry into a qualified, explainable and action-ready sales opportunity.
-                Select a scenario or enter your own lead to see LeadPilot&apos;s intelligence pipeline in action.
+                Select a scenario or enter your own lead to see DealCircuit&apos;s intelligence pipeline in action.
               </p>
               <Badge variant="info" size="sm" className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5" /> Simulation Mode - no external CRM or email actions will be performed
@@ -421,7 +421,7 @@ export default function IntelligenceLabPage() {
                     className="w-4 h-4 rounded" style={{ accentColor: 'var(--color-brand-cyan)' }}
                   />
                   <label htmlFor="consent" className="text-caption text-text-muted">
-                    I consent to LeadPilot AI processing my project requirements and generating automated follow-up communications.
+                    I consent to DealCircuit processing my project requirements and generating automated follow-up communications.
                   </label>
                 </div>
                 <Button type="submit" className="w-full gap-2" size="lg" disabled={loading} style={{ background: 'linear-gradient(90deg, var(--color-brand-blue), var(--color-brand-purple))' }}>
@@ -432,7 +432,7 @@ export default function IntelligenceLabPage() {
                     </>
                   ) : (
                     <>
-                      <Zap className="w-4 h-4" /> Analyze Lead with LeadPilot AI
+                      <Zap className="w-4 h-4" /> Analyze Lead with DealCircuit
                     </>
                   )}
                 </Button>
@@ -604,7 +604,7 @@ export default function IntelligenceLabPage() {
 
       <footer className="border-t mt-12" style={{ borderColor: 'var(--color-border-subtle)' }}>
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-caption text-text-muted">
-          LeadPilot AI · Lead Intelligence & Revenue Operations · Demo Mode Enabled
+          DealCircuit · Lead Intelligence & Revenue Operations · Demo Mode Enabled
         </div>
       </footer>
     </div>

@@ -1,5 +1,5 @@
 /**
- * LeadPilot Design Tokens — Border Radius System
+ * DealCircuit Design Tokens — Border Radius System
  *
  * Consistent radius scale. All values in rem.
  */

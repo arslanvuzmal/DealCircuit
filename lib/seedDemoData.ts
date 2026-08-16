@@ -11,7 +11,7 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedResult> {
   const allowProdSeed = process.env.ALLOW_PRODUCTION_SEED === 'true';
   const demoMode = process.env.DEMO_MODE !== 'false';
 
-  console.log('🌱 Starting LeadPilot AI Database Seeding...');
+  console.log('🌱 Starting DealCircuit Database Seeding...');
 
   if (isProd && !allowProdSeed) {
     console.warn(
@@ -181,7 +181,7 @@ export async function seedDemoData(prisma: PrismaClient): Promise<SeedResult> {
         desiredTimeline: 'Immediate (< 2 weeks)',
         decisionAuthority: 'CEO / Founder',
         projectDescription:
-          'We receive over 1,500 inbound leads per month and need LeadPilot AI to automatically qualify, score, and sync qualified leads directly into our CRM.',
+          'We receive over 1,500 inbound leads per month and need DealCircuit to automatically qualify, score, and sync qualified leads directly into our CRM.',
         leadSource: 'Website Form',
         idempotencyKey: 'seed_lead_sarah_jenkins_001',
         status: 'SCORED',

@@ -1,5 +1,5 @@
 /**
- * LeadPilot Design Tokens — Transition / Motion System
+ * DealCircuit Design Tokens — Transition / Motion System
  *
  * Consistent timing and easing for micro-interactions.
  * Respects `prefers-reduced-motion`.

@@ -1,5 +1,5 @@
 /**
- * LeadPilot UI Component Library — Main Export
+ * DealCircuit UI Component Library — Main Export
  *
  * Reusable, accessible, design-token-driven components.
  */

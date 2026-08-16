@@ -149,7 +149,7 @@ export async function POST(request: Request) {
           risksJson: JSON.stringify(intelligenceResult.objections.map(o => o.name)),
           missingInfoJson: JSON.stringify(intelligenceResult.missingInformation.map(m => m.field)),
           recommendedAction: intelligenceResult.dealStrategy.action,
-          aiProvider: 'LeadPilot Intelligence Engine',
+          aiProvider: 'DealCircuit Intelligence Engine',
           aiModel: 'leadpilot-demo-v1',
           promptVersion: 'v1.0.0',
           isDemoMode: isDemoMode,

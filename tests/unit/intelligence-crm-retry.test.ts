@@ -67,7 +67,7 @@ describe('CRM Failure Retry & Idempotency', () => {
           budgetRange: '$25k-$50k (Growth)',
           desiredTimeline: '1-3 Months',
           decisionAuthority: 'Final Decision Maker (C-Level / Founder / Owner)',
-          projectDescription: 'Testing CRM failure simulation with LeadPilot AI.',
+          projectDescription: 'Testing CRM failure simulation with DealCircuit.',
           leadSource: 'Website Form',
           status: 'SCORED',
           category: 'HOT',

@@ -1,8 +1,8 @@
-# LeadPilot AI
+# DealCircuit
 
 > AI Lead Operations & n8n Automation
 
-LeadPilot AI is an end-to-end B2B lead capture, qualification scoring, AI safety defense, and workflow automation system built with Next.js 14, TypeScript, Tailwind CSS, Prisma ORM, PostgreSQL, and n8n.
+DealCircuit is an end-to-end B2B lead capture, qualification scoring, AI safety defense, and workflow automation system built with Next.js 14, TypeScript, Tailwind CSS, Prisma ORM, PostgreSQL, and n8n.
 
 ---
 
@@ -26,8 +26,8 @@ LeadPilot AI is an end-to-end B2B lead capture, qualification scoring, AI safety
 
 ### 1. Installation
 ```bash
-git clone https://github.com/arslanvuzmal/leadpilot-ai.git
-cd leadpilot-ai
+git clone https://github.com/arslanvuzmal/DealCircuit.git
+cd DealCircuit
 npm install
 ```
 
@@ -60,7 +60,7 @@ Access the application at `http://localhost:3000`.
 ## Project Structure
 
 ```
-leadpilot-ai/
+DealCircuit/
 ├── app/                  # Next.js 14 App Router (Pages & APIs)
 │   ├── api/              # Public, Authenticated, and Internal n8n APIs
 │   ├── dashboard/        # Administration Console (Professional Light Theme)
@@ -94,5 +94,3 @@ npm run verify
 ---
 
 ## License
-
-MIT License.

@@ -19,8 +19,8 @@ export default function WhatIfComparisonPanel({ traditionalSteps, leadPilotSteps
             <Zap className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-text-primary text-body-sm">What If LeadPilot Didn&apos;t Exist?</h3>
-            <p className="text-caption text-text-muted">Traditional manual process vs. LeadPilot automation</p>
+            <h3 className="font-bold text-text-primary text-body-sm">What If DealCircuit Didn&apos;t Exist?</h3>
+            <p className="text-caption text-text-muted">Traditional manual process vs. DealCircuit automation</p>
           </div>
         </div>
       </CardHeader>
@@ -48,7 +48,7 @@ export default function WhatIfComparisonPanel({ traditionalSteps, leadPilotSteps
             <CardHeader>
               <div className="flex items-center gap-2 text-status-success-text mb-3">
                 <CheckCircle2 className="w-5 h-5" />
-                <h4 className="font-semibold text-text-primary">LeadPilot Automated Process</h4>
+                <h4 className="font-semibold text-text-primary">DealCircuit Automated Process</h4>
               </div>
             </CardHeader>
             <div className="space-y-2">

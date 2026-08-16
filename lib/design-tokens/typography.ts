@@ -1,5 +1,5 @@
 /**
- * LeadPilot Design Tokens — Typography System
+ * DealCircuit Design Tokens — Typography System
  *
  * Mature type scale with clear hierarchy.
  * All sizes in rem, line-heights unitless.

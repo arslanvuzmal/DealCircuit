@@ -1,5 +1,5 @@
 /**
- * LeadPilot Design Tokens — Main Export
+ * DealCircuit Design Tokens — Main Export
  *
  * Centralized design system tokens for colors, spacing, typography,
  * shadows, radius, and transitions.

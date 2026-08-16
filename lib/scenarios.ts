@@ -32,7 +32,7 @@ export const SCENARIOS: Record<ScenarioType, {
   },
   ambiguous: {
     label: 'Ambiguous Lead',
-    description: 'Important information is missing. LeadPilot must request human review.',
+    description: 'Important information is missing. DealCircuit must request human review.',
     icon: '❓',
     leadData: {
       fullName: 'Jordan Kim',
@@ -166,7 +166,7 @@ export const SCENARIOS: Record<ScenarioType, {
       budgetRange: 'Unknown / Not supplied',
       desiredTimeline: 'Unknown / Not supplied',
       decisionAuthority: 'Unknown / Not supplied',
-      projectDescription: 'Testing CRM failure simulation with LeadPilot AI.',
+      projectDescription: 'Testing CRM failure simulation with DealCircuit.',
       leadSource: 'Website Form',
     },
   },
