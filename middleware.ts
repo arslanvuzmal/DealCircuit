@@ -35,6 +35,7 @@ export const config = {
     '/api/leads/:id/approve',
     '/api/leads/:id/reject',
     '/api/leads/:id/reprocess',
+    '/api/leads/:id/archive',
     '/api/dashboard/:path*',
     '/api/internal/:path*',
   ],

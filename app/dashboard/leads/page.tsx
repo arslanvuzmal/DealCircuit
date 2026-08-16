@@ -1,54 +1,64 @@
 import React from 'react';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
-import {
-  Users,
-  Filter,
-  Search,
-  ChevronDown,
-  MoreHorizontal,
-  ArrowUpRight,
-  Download,
-  Columns,
-  CheckCircle2,
-  XCircle,
-} from 'lucide-react';
-import { formatNumber, formatRelativeTime } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/Card';
+import { Users, Filter, Download, Columns } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Input';
+import { LeadsFilterBar } from '@/components/leads/LeadsFilterBar';
 import { LeadsTable } from '@/components/leads/LeadsTable';
+import { buildLeadsWhere } from '@/lib/leadsFilter';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-async function fetchLeads() {
-  const leads = await prisma.lead.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 100,
-    include: {
-      scores: { take: 1, orderBy: { createdAt: 'desc' } },
-    },
-  });
-  return leads;
+const PAGE_SIZE = 25;
+
+interface LeadsPageSearchParams {
+  q?: string;
+  category?: string;
+  status?: string;
+  crmStatus?: string;
+  dateRange?: string;
+  page?: string;
 }
 
-const CATEGORIES = ['HOT', 'WARM', 'COLD', 'REVIEW_REQUIRED', 'PENDING'];
-const STATUSES = ['NEW', 'SCORED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'ARCHIVED'];
-const CRM_STATUSES = ['SYNCED', 'FAILED', 'PENDING', 'FAILED_PERMANENT', 'FAILED_RETRYABLE'];
+async function fetchLeads(searchParams: LeadsPageSearchParams) {
+  const where = buildLeadsWhere(searchParams);
+  const page = Math.max(1, parseInt(searchParams.page || '1', 10) || 1);
 
-const categoryLabels: Record<string, string> = {
-  HOT: 'HOT',
-  WARM: 'WARM',
-  COLD: 'COLD',
-  REVIEW_REQUIRED: 'REVIEW',
-  PENDING: 'PENDING',
-};
+  const [leads, total] = await Promise.all([
+    prisma.lead.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+      include: {
+        scores: { take: 1, orderBy: { createdAt: 'desc' } },
+      },
+    }),
+    prisma.lead.count({ where }),
+  ]);
 
-export default async function LeadsDirectoryPage() {
-  const leads = await fetchLeads();
+  return { leads, total, page };
+}
+
+function buildQueryString(searchParams: LeadsPageSearchParams, overrides: Record<string, string | undefined>) {
+  const merged = { ...searchParams, ...overrides };
+  const params = new URLSearchParams();
+  Object.entries(merged).forEach(([key, value]) => {
+    if (value) params.set(key, value);
+  });
+  return params.toString();
+}
+
+export default async function LeadsDirectoryPage({
+  searchParams,
+}: {
+  searchParams: LeadsPageSearchParams;
+}) {
+  const { leads, total, page } = await fetchLeads(searchParams);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const exportQuery = buildQueryString(searchParams, { page: undefined });
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -66,76 +76,30 @@ export default async function LeadsDirectoryPage() {
         <div className="flex items-center gap-3 flex-wrap">
           <Badge variant="neutral" size="sm" className="flex items-center gap-1.5">
             <Filter className="w-3 h-3" />
-            {leads.length} Records
+            {total} Records
           </Badge>
-          <Button variant="secondary" size="sm">
+          <a
+            href={`/api/leads/export${exportQuery ? `?${exportQuery}` : ''}`}
+            className="btn btn-secondary btn-sm inline-flex items-center"
+          >
             <Download className="w-4 h-4 mr-2" />
             Export CSV
-          </Button>
-          <Button variant="secondary" size="sm">
-            <Columns className="w-4 h-4 mr-2" />
-            Columns
-          </Button>
+          </a>
         </div>
       </div>
 
       {/* Toolbar: Search + Filters */}
-      <Card variant="compact" className="space-y-4">
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-              <Input
-                placeholder="Search leads, companies, emails…"
-                className="pl-10"
-                size="sm"
-              />
-            </div>
-
-            {/* Category Filter */}
-            <Select
-              placeholder="All Categories"
-              options={[{ value: '', label: 'All Categories' }, ...['HOT', 'WARM', 'COLD', 'REVIEW_REQUIRED', 'PENDING'].map(c => ({ value: c, label: c }))]}
-              size="sm"
-              className="w-40"
-            />
-
-            {/* Status Filter */}
-            <Select
-              placeholder="All Statuses"
-              options={[{ value: '', label: 'All Statuses' }, ...['NEW', 'SCORED', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'ARCHIVED'].map(s => ({ value: s, label: s }))]}
-              size="sm"
-              className="w-40"
-            />
-
-            {/* CRM Status Filter */}
-            <Select
-              placeholder="CRM Status"
-              options={[{ value: '', label: 'CRM Status' }, ...['SYNCED', 'FAILED', 'PENDING', 'FAILED_PERMANENT', 'FAILED_RETRYABLE'].map(s => ({ value: s, label: s }))]}
-              size="sm"
-              className="w-40"
-            />
-
-            {/* Date Range */}
-            <Select
-              placeholder="Date Range"
-              options={[
-                { value: '', label: 'Date Range' },
-                { value: 'today', label: 'Today' },
-                { value: 'week', label: 'Last 7 days' },
-                { value: 'month', label: 'Last 30 days' },
-                { value: 'quarter', label: 'Last 90 days' },
-              ]}
-              size="sm"
-              className="w-40"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <LeadsFilterBar initial={searchParams} />
 
       {/* Leads Table - Client Component for interactivity */}
-      <LeadsTable leads={leads} />
+      <LeadsTable
+        leads={leads}
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        prevHref={page > 1 ? `/dashboard/leads?${buildQueryString(searchParams, { page: String(page - 1) })}` : undefined}
+        nextHref={page < totalPages ? `/dashboard/leads?${buildQueryString(searchParams, { page: String(page + 1) })}` : undefined}
+      />
 
       {/* Demo Mode Banner */}
       {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' && (

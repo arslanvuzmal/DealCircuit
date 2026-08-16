@@ -75,14 +75,17 @@ export default function DashboardLayout({
   );
 }
 
-/** Client-side wrapper for authentication check */
+/**
+ * Renders the dashboard chrome (sidebar/topbar) for an already-authenticated request.
+ * Auth itself happens one level up in the server component (app/dashboard/layout.tsx),
+ * which checks the session cookie and redirects to /login before this ever mounts.
+ * middleware.ts only guards specific mutating API routes (see its matcher), not pages.
+ */
 export function DashboardClientLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Authentication is handled by middleware
-  // This component just provides the layout
   return (
     <DashboardLayout>
       {children}
