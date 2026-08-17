@@ -203,7 +203,7 @@ function StatusGrid({
               <span className="text-text-secondary">{item.icon}</span>
               <span className="font-medium text-text-primary">{item.label}</span>
             </div>
-            <span className="text-kpi-value text-text-primary font-mono">{formatNumber(item.count)}</span>
+            <span className="text-card-title text-text-primary font-mono font-bold">{formatNumber(item.count)}</span>
           </div>
         ))}
       </div>

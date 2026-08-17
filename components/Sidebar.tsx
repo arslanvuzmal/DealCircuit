@@ -73,7 +73,7 @@ export function Sidebar() {
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
-        <aside className="fixed left-0 top-0 bottom-0 z-[300] w-sidebar-expanded bg-surface-default border-r border-border-subtle animate-slide-in-right lg:hidden" role="navigation" aria-label="Main navigation">
+        <aside className="fixed left-0 top-0 bottom-0 z-[300] w-sidebar-expanded bg-surface border-r border-border-subtle animate-slide-in-right lg:hidden" role="navigation" aria-label="Main navigation">
           <div className="flex flex-col h-full">
             {renderSidebarContent()}
           </div>
@@ -154,7 +154,7 @@ export function Sidebar() {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 bottom-0 z-[200] bg-surface-default border-r border-border-subtle transition-all duration-200 ease-default flex flex-col',
+          'fixed left-0 top-0 bottom-0 z-[200] bg-surface border-r border-border-subtle transition-all duration-200 ease-default flex flex-col',
           collapsed ? 'w-sidebar-collapsed' : 'w-sidebar-expanded',
           'lg:block hidden'
         )}

@@ -40,7 +40,7 @@ export default function CRMPreviewPanel({ data }: CRMPreviewPanelProps) {
   const priorityVariant = priorityVariants[data.priority] || 'warning';
 
   return (
-    <div className="bg-surface-default border border-border-subtle rounded-xl p-6 space-y-6">
+    <div className="bg-surface border border-border-subtle rounded-xl p-6 space-y-6">
       <CardHeader>
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 bg-brand-blue/10 rounded-lg flex items-center justify-center text-brand-blue">

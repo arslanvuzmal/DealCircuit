@@ -15,7 +15,7 @@ const DemoBoundariesTable = dynamic(() => import('@/components/landing/DemoBound
 export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col animate-fade-in" style={{ backgroundColor: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}>
-      <header className="topbar fixed left-0 right-0 top-0 z-[100] bg-surface-default/95 backdrop-blur-sm border-b border-border-subtle">
+      <header className="topbar fixed left-0 right-0 top-0 z-[100] bg-surface/95 backdrop-blur-sm border-b border-border-subtle">
         <div className="flex items-center h-topbar-height px-4 sm:px-6 lg:px-8 max-w-[72rem] mx-auto">
           <Logo size="md" className="mr-8" />
           <nav className="flex-1 flex items-center justify-end gap-6">

@@ -59,7 +59,7 @@ export function HumanControlPreview() {
               { id: 'L-2024-038', company: 'ABC Logistics (dup)', score: 78, confidence: '82%', reason: 'Duplicate of L-2024-031', badge: 'Duplicate' },
               { id: 'L-2024-052', company: 'Test Corp', score: 12, confidence: '94%', reason: 'Prompt injection detected', badge: 'Security Flag' },
             ].map((lead) => (
-              <div key={lead.id} className="flex items-center gap-3 p-3 bg-surface-interactive border border-border-subtle rounded-lg hover:border-border-default transition-colors">
+              <div key={lead.id} className="flex items-center gap-3 p-3 bg-surface-interactive border border-border-subtle rounded-lg hover:border-border transition-colors">
                 <div className="w-10 h-10 rounded-lg bg-brand-cyan-dim flex items-center justify-center text-brand-cyan">
                   <FileText className="w-4 h-4" />
                 </div>

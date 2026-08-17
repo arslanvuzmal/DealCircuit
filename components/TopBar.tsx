@@ -104,7 +104,7 @@ export function TopBar() {
   const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
   return (
-    <header className="topbar fixed left-0 right-0 top-0 z-[100] bg-surface-default/95 backdrop-blur-sm border-b border-border-subtle">
+    <header className="topbar fixed left-0 right-0 top-0 z-[100] bg-surface/95 backdrop-blur-sm border-b border-border-subtle">
       <div className="flex items-center h-topbar-height px-4 sm:px-6 lg:px-8">
         {/* Mobile sidebar trigger */}
         <button
@@ -137,7 +137,7 @@ export function TopBar() {
           >
             <Search className="w-5 h-5 mr-2 flex-shrink-0" aria-hidden="true" />
             <span className="truncate text-body-sm">Search leads, companies, workflows…</span>
-            <kbd className="ml-auto px-1.5 py-0.5 text-[0.625rem] font-mono text-text-muted bg-surface-default rounded border border-border-subtle">
+            <kbd className="ml-auto px-1.5 py-0.5 text-[0.625rem] font-mono text-text-muted bg-surface rounded border border-border-subtle">
               ⌘K
             </kbd>
           </button>
@@ -266,11 +266,11 @@ function CommandPalette({
                 value={query}
                 onChange={(e) => { setQuery(e.target.value); onQueryChange(e.target.value); setSelectedIndex(0); }}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-10 pr-10 py-3 bg-surface-default border border-border-default rounded-lg text-text-primary text-body focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/30"
+                className="w-full pl-10 pr-10 py-3 bg-surface border border-border rounded-lg text-text-primary text-body focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/30"
                 placeholder="Search leads, companies, workflows…"
                 autoFocus
               />
-              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 text-[0.625rem] font-mono text-text-muted bg-surface-default rounded border border-border-subtle">
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 text-[0.625rem] font-mono text-text-muted bg-surface rounded border border-border-subtle">
                 ⎋ Close
               </kbd>
             </div>
@@ -316,7 +316,7 @@ function CommandPalette({
 
           <div className="p-3 border-t border-border-subtle text-right">
             <span className="text-caption text-text-muted">
-              <kbd className="px-1.5 py-0.5 text-[0.625rem] font-mono bg-surface-default rounded border border-border-subtle">⌘K</kbd> to open
+              <kbd className="px-1.5 py-0.5 text-[0.625rem] font-mono bg-surface rounded border border-border-subtle">⌘K</kbd> to open
             </span>
           </div>
         </div>

@@ -88,7 +88,7 @@ export function TabsTrigger({ value, children, disabled = false, className }: Ta
         disabled
           ? 'opacity-50 cursor-not-allowed text-text-muted'
           : isActive
-          ? 'bg-surface-default text-text-primary shadow-card'
+          ? 'bg-surface text-text-primary shadow-card'
           : 'text-text-secondary hover:text-text-primary hover:bg-surface-highlight',
         className
       )}

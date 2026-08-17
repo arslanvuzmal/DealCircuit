@@ -29,7 +29,7 @@ export function DecisionPipeline() {
       <div className="relative flex flex-col gap-8 sm:gap-10 px-8">
         {steps.map((step, index) => (
           <div key={step.label} className="flex items-center gap-6 relative">
-            <div className="relative flex-shrink-0 w-20 h-20 rounded-xl flex items-center justify-center bg-surface-default border-2 border-border-subtle transition-all duration-300"
+            <div className="relative flex-shrink-0 w-20 h-20 rounded-xl flex items-center justify-center bg-surface border-2 border-border-subtle transition-all duration-300"
               style={{
                 backgroundColor: step.status === 'active' ? 'var(--color-brand-cyan-dim)' : 'var(--color-surface-default)',
                 borderColor: step.status === 'complete' ? 'var(--color-status-success)' : step.status === 'active' ? 'var(--color-brand-cyan)' : 'var(--color-border-subtle)',
@@ -38,7 +38,7 @@ export function DecisionPipeline() {
             >
               {step.icon}
               {step.status === 'complete' && (
-                <CheckCircle2 className="absolute -bottom-1 -right-1 w-5 h-5 text-status-success bg-surface-default rounded-full" />
+                <CheckCircle2 className="absolute -bottom-1 -right-1 w-5 h-5 text-status-success bg-surface rounded-full" />
               )}
               {step.status === 'active' && (
                 <div className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-brand-cyan animate-pulse-soft" />
