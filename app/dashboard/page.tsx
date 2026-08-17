@@ -198,12 +198,12 @@ function StatusGrid({
       </div>
       <div className="grid grid-cols-2 gap-2 text-body-sm">
         {items.map((item) => (
-          <div key={item.label} className="flex items-center justify-between p-3 bg-surface-interactive rounded-lg border border-border-subtle">
-            <div className="flex items-center gap-2">
-              <span className="text-text-secondary">{item.icon}</span>
-              <span className="font-medium text-text-primary">{item.label}</span>
+          <div key={item.label} className="flex flex-col gap-1.5 p-3 bg-surface-interactive rounded-lg border border-border-subtle">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-text-secondary flex-shrink-0">{item.icon}</span>
+              <span className="font-medium text-text-primary truncate">{item.label}</span>
             </div>
-            <span className="text-card-title text-text-primary font-mono font-bold">{formatNumber(item.count)}</span>
+            <span className="text-body font-mono font-bold text-text-primary">{formatNumber(item.count)}</span>
           </div>
         ))}
       </div>
