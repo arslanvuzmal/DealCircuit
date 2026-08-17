@@ -81,6 +81,11 @@ export const CSRF_EXEMPT_PATHS = [
   '/api/auth/login',
   '/api/auth/logout',
   '/api/auth/me',
+  // Internal/service-to-service routes authenticate themselves via the
+  // x-internal-secret header (see each route's own check against
+  // env.INTERNAL_API_SECRET) rather than a browser session cookie, so the
+  // session-cookie gate in middleware.ts doesn't apply to them.
+  '/api/internal',
 ];
 
 export function isCSRFExempt(path: string): boolean {
