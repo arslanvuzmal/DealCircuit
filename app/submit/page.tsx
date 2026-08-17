@@ -18,7 +18,7 @@ export default function SubmitPage() {
               <p className="text-caption text-text-muted">Lead Intelligence & Revenue Operations</p>
             </div>
           </div>
-          <Link href="/login" className="btn-ghost btn-sm">
+          <Link href="/login" className="btn btn-ghost btn-sm">
             <LayoutDashboard className="w-3.5 h-3.5 mr-1" /> Admin Console
           </Link>
         </div>

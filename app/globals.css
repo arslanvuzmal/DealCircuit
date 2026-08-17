@@ -376,6 +376,8 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    white-space: nowrap;
     gap: 0.5rem;
     font-weight: 600;
     letter-spacing: 0.05em;

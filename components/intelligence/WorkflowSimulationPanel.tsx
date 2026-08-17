@@ -82,7 +82,7 @@ export default function WorkflowSimulationPanel({ isRunning, onRun, simulationMo
         <button
           onClick={runSimulation}
           disabled={isRunning}
-          className="w-full btn-primary"
+          className="btn w-full btn-primary"
         >
           {isRunning ? (
             <>

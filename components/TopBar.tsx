@@ -108,7 +108,7 @@ export function TopBar() {
       <div className="flex items-center h-topbar-height px-4 sm:px-6 lg:px-8">
         {/* Mobile sidebar trigger */}
         <button
-          className="lg:hidden btn-ghost p-2 mr-3"
+          className="lg:hidden btn btn-ghost p-2 mr-3"
           onClick={() => document.dispatchEvent(new CustomEvent('sidebar:toggle'))}
           aria-label="Toggle navigation"
         >
@@ -125,7 +125,7 @@ export function TopBar() {
           <button
             onClick={() => setSearchOpen(true)}
             className={cn(
-              'btn-ghost w-full justify-start px-3 py-2',
+              'btn btn-ghost w-full justify-start px-3 py-2',
               'bg-surface-interactive border border-border-subtle',
               'hover:border-border-focus hover:bg-surface-highlight',
               'transition-all duration-120',
@@ -165,7 +165,7 @@ export function TopBar() {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="btn-ghost p-2 rounded-lg"
+            className="btn btn-ghost p-2 rounded-lg"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -175,7 +175,7 @@ export function TopBar() {
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="btn-ghost p-2 rounded-lg relative"
+              className="btn btn-ghost p-2 rounded-lg relative"
               aria-label="Notifications"
               aria-expanded={notificationsOpen}
             >
@@ -368,7 +368,7 @@ function NotificationDropdown({ onClose }: { onClose: () => void }) {
         <div className="surface-raised border border-border-subtle rounded-xl shadow-floating overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
             <h3 className="text-card-title text-text-primary">Notifications</h3>
-            <button onClick={onClose} className="btn-ghost p-1.5" aria-label="Close">
+            <button onClick={onClose} className="btn btn-ghost p-1.5" aria-label="Close">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -403,7 +403,7 @@ function NotificationDropdown({ onClose }: { onClose: () => void }) {
             ))}
           </div>
           <div className="px-4 py-3 border-t border-border-subtle">
-            <button onClick={onClose} className="btn-ghost w-full text-sm">View all notifications</button>
+            <button onClick={onClose} className="btn btn-ghost w-full text-sm">View all notifications</button>
           </div>
         </div>
       </div>

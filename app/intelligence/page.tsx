@@ -194,10 +194,10 @@ export default function IntelligenceLabPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/login" className="btn-ghost btn-sm">
+              <Link href="/login" className="btn btn-ghost btn-sm">
                 Admin Console
               </Link>
-              <Link href="/submit" className="btn-primary btn-sm gap-2">
+              <Link href="/submit" className="btn btn-primary btn-sm gap-2">
                 <Zap className="w-3.5 h-3.5" /> Public Form
               </Link>
             </div>
@@ -275,7 +275,7 @@ export default function IntelligenceLabPage() {
           <Card variant="hover" className="max-w-2xl mx-auto mt-8 space-y-6 animate-slide-up">
             <CardHeader className="flex items-center justify-between">
               <CardTitle>Custom Lead Entry</CardTitle>
-              <button onClick={() => setShowCustomForm(false)} className="btn-ghost btn-sm">
+              <button onClick={() => setShowCustomForm(false)} className="btn btn-ghost btn-sm">
                 <X className="w-4 h-4" />
               </button>
             </CardHeader>

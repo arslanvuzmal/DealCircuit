@@ -132,7 +132,7 @@ export default function ReviewItemAction({ lead }: { lead: any }) {
         <button
           onClick={handleApprove}
           disabled={loading}
-          className="btn-success"
+          className="btn btn-success"
         >
           {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />} Approve & Dispatch Sync
         </button>
@@ -140,7 +140,7 @@ export default function ReviewItemAction({ lead }: { lead: any }) {
         <button
           onClick={handleReject}
           disabled={loading}
-          className="btn-danger"
+          className="btn btn-danger"
         >
           <XCircle className="w-3.5 h-3.5" /> Reject Lead
         </button>
@@ -148,7 +148,7 @@ export default function ReviewItemAction({ lead }: { lead: any }) {
         <button
           onClick={handleReprocess}
           disabled={loading}
-          className="btn-secondary"
+          className="btn btn-secondary"
         >
           <RefreshCw className="w-3.5 h-3.5 text-blue-600" /> Re-qualify AI Engine
         </button>

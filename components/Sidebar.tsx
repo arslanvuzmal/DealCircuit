@@ -93,7 +93,7 @@ export function Sidebar() {
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              className="btn-ghost p-1.5 rounded-md hover:bg-surface-interactive transition-colors"
+              className="btn btn-ghost p-1.5 rounded-md hover:bg-surface-interactive transition-colors"
               aria-label="Collapse sidebar"
             >
               <ChevronLeft className="w-5 h-5 text-text-muted" />
@@ -165,7 +165,7 @@ export function Sidebar() {
         {!collapsed && (
           <button
             onClick={() => setCollapsed(true)}
-            className="absolute -right-5 top-14 z-10 btn-ghost p-1.5 rounded-full shadow-floating hover:bg-surface-raised transition-all"
+            className="absolute -right-5 top-14 z-10 btn btn-ghost p-1.5 rounded-full shadow-floating hover:bg-surface-raised transition-all"
             aria-label="Collapse sidebar"
           >
             <ChevronLeft className="w-5 h-5 text-text-muted" />
@@ -177,7 +177,7 @@ export function Sidebar() {
       {collapsed && (
         <button
           onClick={() => setCollapsed(false)}
-          className="fixed left-[4rem] top-14 z-10 lg:block hidden btn-ghost p-1.5 rounded-full shadow-floating hover:bg-surface-raised transition-all"
+          className="fixed left-[4rem] top-14 z-10 lg:block hidden btn btn-ghost p-1.5 rounded-full shadow-floating hover:bg-surface-raised transition-all"
           aria-label="Expand sidebar"
         >
           <ChevronRight className="w-5 h-5 text-text-muted" />
@@ -186,7 +186,7 @@ export function Sidebar() {
 
       {/* Mobile Menu Button */}
       <button
-        className="lg:hidden fixed left-3 top-3 z-[350] btn-ghost p-2 rounded-md shadow-floating"
+        className="lg:hidden fixed left-3 top-3 z-[350] btn btn-ghost p-2 rounded-md shadow-floating"
         onClick={() => setMobileOpen(true)}
         aria-label="Open navigation menu"
       >

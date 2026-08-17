@@ -148,7 +148,7 @@ export default function HomePage() {
                   Use Classic Lead Form
                 </Button>
               </Link>
-              <a href="https://github.com/arslanvuzmal/lead-pilot-ai" target="_blank" rel="noopener noreferrer" className="btn-ghost btn-lg gap-2">
+              <a href="https://github.com/arslanvuzmal/lead-pilot-ai" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-lg gap-2">
                 <ExternalLink className="w-4 h-4" />
                 View Source on GitHub
               </a>

@@ -233,11 +233,11 @@ export default async function OverviewDashboard() {
           <p className="text-body-sm text-text-muted mt-1">Operations command center — real-time lead intelligence & workflow health</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/demo-controls" className="btn-ghost btn-sm">
+          <Link href="/dashboard/demo-controls" className="btn btn-ghost btn-sm">
             <Shield className="w-4 h-4 mr-2" />
             Demo Controls
           </Link>
-          <Link href="/dashboard/review-queue" className="btn-primary btn-sm">
+          <Link href="/dashboard/review-queue" className="btn btn-primary btn-sm">
             <AlertTriangle className="w-4 h-4 mr-2" />
             Review Queue ({data.reviewRequired})
           </Link>
@@ -384,7 +384,7 @@ export default async function OverviewDashboard() {
                   <Flame className="w-5 h-5 text-status-warning" />
                   Priority Work Area
                 </span>
-                <Link href="/dashboard/leads" className="btn-ghost btn-sm">
+                <Link href="/dashboard/leads" className="btn btn-ghost btn-sm">
                   View All <ArrowUpRight className="w-3 h-3 ml-1" />
                 </Link>
               </CardTitle>
@@ -446,7 +446,7 @@ export default async function OverviewDashboard() {
               </Table>
             </CardContent>
             <CardFooter>
-              <Link href="/dashboard/leads" className="btn-ghost btn-sm w-full">
+              <Link href="/dashboard/leads" className="btn btn-ghost btn-sm w-full">
                 View all leads <ArrowUpRight className="w-3 h-3 ml-1" />
               </Link>
             </CardFooter>

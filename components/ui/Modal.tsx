@@ -145,7 +145,7 @@ export function Modal({
               <button
                 type="button"
                 onClick={onClose}
-                className="btn-ghost p-2 rounded-full hover:bg-surface-interactive transition-colors"
+                className="btn btn-ghost p-2 rounded-full hover:bg-surface-interactive transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5 text-text-secondary" aria-hidden="true" />
